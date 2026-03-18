@@ -5,7 +5,7 @@
 
 const APP_CONFIG = {
   supabaseUrl: 'https://wqxunwyjplbfneukxgdx.supabase.co',
-  supabaseAnonKey: 'sb_publishable_KSSG99o97B8IsSYL0CRU5Q_iVSz8VUP',
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxeHVud3lqcGxiZm5ldWt4Z2R4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MDk2ODksImV4cCI6MjA4OTM4NTY4OX0.kEY3JWfveZMFxtLs1bN7sZ9Xa3cgZDQJcWp_Xtk-Ybg',
 };
 
 // 위험성평가 5x4 매트릭스 등급 정의
