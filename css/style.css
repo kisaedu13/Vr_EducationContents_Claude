@@ -1,0 +1,319 @@
+/* === 공통 변수 === */
+:root {
+  --primary: #1976D2;
+  --primary-dark: #1565C0;
+  --danger: #D32F2F;
+  --success: #4CAF50;
+  --warning: #FF9800;
+  --bg: #F5F5F5;
+  --surface: #FFFFFF;
+  --text: #212121;
+  --text-secondary: #757575;
+  --border: #E0E0E0;
+  --radius: 8px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+/* === 리셋 === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 16px; color: var(--text); background: var(--bg); }
+button { cursor: pointer; font-family: inherit; }
+input, select { font-family: inherit; font-size: inherit; }
+
+/* === 버튼 === */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 20px; border: none; border-radius: var(--radius);
+  font-size: 14px; font-weight: 600; transition: all 0.2s;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:disabled { background: #BDBDBD; cursor: not-allowed; }
+.btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: #F5F5F5; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: #B71C1C; }
+.btn-scene {
+  background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);
+  padding: 6px 14px; font-size: 13px; border-radius: 20px;
+}
+.btn-scene.active { background: var(--primary); border-color: var(--primary); }
+.btn-scene:hover { background: rgba(255,255,255,0.25); }
+
+/* === 교육생 진입 화면 === */
+.entry-screen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
+  padding: 20px;
+}
+.entry-card {
+  background: var(--surface); border-radius: 16px; padding: 40px; max-width: 420px;
+  width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.entry-card h1 { font-size: 24px; text-align: center; margin-bottom: 8px; }
+.entry-card .subtitle { text-align: center; color: var(--text-secondary); margin-bottom: 32px; font-size: 14px; }
+.form-field { margin-bottom: 16px; }
+.form-field label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+.form-field input, .form-field select {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-size: 15px; transition: border-color 0.2s;
+}
+.form-field input:focus, .form-field select:focus { outline: none; border-color: var(--primary); }
+.entry-card .btn { width: 100%; margin-top: 8px; padding: 12px; font-size: 16px; }
+
+/* === VR 화면 === */
+.vr-screen { position: relative; width: 100%; height: 100vh; background: #000; overflow: hidden; }
+#krpano-viewer { width: 100%; height: 100%; }
+
+/* 상단 바 */
+.vr-topbar {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+  pointer-events: none;
+}
+.vr-topbar > * { pointer-events: auto; }
+.vr-topbar-left { display: flex; align-items: center; gap: 12px; }
+.vr-topbar-left h2 { color: white; font-size: 16px; font-weight: 600; }
+.vr-topbar-right { display: flex; align-items: center; gap: 10px; }
+.student-badge {
+  background: rgba(255,255,255,0.15); color: white; padding: 4px 12px;
+  border-radius: 20px; font-size: 13px;
+}
+
+/* 씬 네비게이션 */
+.scene-nav {
+  position: absolute; top: 60px; left: 50%; transform: translateX(-50%); z-index: 100;
+  display: flex; gap: 8px;
+}
+
+/* 진행률 */
+.progress-bar {
+  position: absolute; bottom: 80px; left: 16px; right: 16px; z-index: 100;
+  background: rgba(0,0,0,0.5); border-radius: 20px; padding: 8px 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.progress-bar-label { color: white; font-size: 13px; white-space: nowrap; }
+.progress-bar-track { flex: 1; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; }
+.progress-bar-fill { height: 100%; background: var(--success); border-radius: 3px; transition: width 0.3s; }
+.progress-bar-text { color: white; font-size: 13px; font-weight: 600; }
+
+/* === 팝업 오버레이 === */
+.overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000;
+  background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.2s; padding: 20px;
+}
+.overlay.active { opacity: 1; }
+.popup {
+  background: var(--surface); border-radius: 16px; padding: 28px; max-width: 460px;
+  width: 100%; max-height: 90vh; overflow-y: auto; position: relative;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+  transform: translateY(20px); transition: transform 0.2s;
+}
+.overlay.active .popup { transform: translateY(0); }
+.popup-close {
+  position: absolute; top: 12px; right: 12px; background: none; border: none;
+  font-size: 24px; color: var(--text-secondary); line-height: 1;
+}
+.popup-close:hover { color: var(--text); }
+
+/* 위험요인 정보 */
+.hazard-info { margin-bottom: 20px; }
+.hazard-category {
+  display: inline-block; background: #E3F2FD; color: var(--primary); font-size: 12px;
+  font-weight: 600; padding: 3px 10px; border-radius: 12px; margin-bottom: 8px;
+}
+.hazard-info h2 { font-size: 20px; margin-bottom: 8px; }
+.hazard-info p { color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+.hazard-meta { font-size: 12px; color: var(--text-secondary); margin-top: 12px; }
+
+/* 평가 폼 */
+.assessment-form .form-group { margin-bottom: 20px; }
+.assessment-form .form-group > label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+.rating-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+.rating-btn {
+  flex: 1; min-width: 60px; padding: 10px 4px; border: 2px solid var(--border);
+  border-radius: var(--radius); background: var(--surface); text-align: center; transition: all 0.15s;
+}
+.rating-btn:hover { border-color: var(--primary); background: #E3F2FD; }
+.rating-btn.selected { border-color: var(--primary); background: var(--primary); color: white; }
+.rating-value { display: block; font-size: 20px; font-weight: 700; }
+.rating-label { display: block; font-size: 11px; margin-top: 2px; }
+.rating-btn.selected .rating-label { color: rgba(255,255,255,0.9); }
+
+/* 위험도 결과 */
+.risk-result {
+  display: flex; align-items: center; gap: 12px; padding: 16px;
+  background: var(--bg); border-radius: var(--radius); margin-bottom: 16px;
+}
+.risk-score {
+  width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 700; color: white; flex-shrink: 0;
+}
+.risk-label { font-size: 18px; font-weight: 700; }
+
+.btn-submit { width: 100%; padding: 14px; font-size: 16px; }
+
+/* === 토스트 === */
+.toast {
+  position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+  padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500;
+  color: white; z-index: 2000; opacity: 0; transition: all 0.3s; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast-success { background: var(--success); }
+.toast-info { background: var(--primary); }
+
+/* === 완료 화면 === */
+.complete-screen {
+  display: flex; align-items: center; justify-content: center; min-height: 100vh;
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%); padding: 20px; text-align: center;
+}
+.complete-card {
+  background: var(--surface); border-radius: 16px; padding: 48px 40px; max-width: 420px; width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.complete-icon { font-size: 64px; margin-bottom: 16px; }
+.complete-card h1 { font-size: 24px; margin-bottom: 12px; }
+.complete-card p { color: var(--text-secondary); margin-bottom: 8px; }
+.complete-card .btn { margin-top: 24px; }
+
+/* === 강사 대시보드 === */
+.instructor-layout { min-height: 100vh; background: var(--bg); }
+
+/* 세션 매니저 */
+.session-manager { max-width: 640px; margin: 0 auto; padding: 40px 20px; }
+.session-manager h1 { font-size: 24px; margin-bottom: 24px; }
+.create-session-form {
+  background: var(--surface); border-radius: var(--radius); padding: 20px;
+  border: 1px solid var(--border); margin-bottom: 24px;
+}
+.create-session-form h3 { font-size: 16px; margin-bottom: 16px; }
+.create-session-form .form-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.create-session-form .form-row input { flex: 1; min-width: 150px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); }
+.session-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px 20px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s;
+}
+.session-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+.session-card-title { font-weight: 600; margin-bottom: 4px; }
+.session-card-meta { font-size: 13px; color: var(--text-secondary); }
+
+/* 대시보드 */
+.dashboard { padding: 20px; max-width: 1200px; margin: 0 auto; }
+.dashboard-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.dashboard-header h1 { font-size: 22px; }
+.dashboard-actions { display: flex; gap: 8px; }
+
+/* 요약 카드 */
+.summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.summary-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; text-align: center;
+}
+.summary-card .card-value { font-size: 32px; font-weight: 700; color: var(--primary); }
+.summary-card .card-label { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+/* 섹션 */
+.dashboard-section { margin-bottom: 32px; }
+.dashboard-section h2 { font-size: 18px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+
+/* 테이블 */
+.data-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+.data-table th { background: var(--bg); font-size: 13px; font-weight: 600; color: var(--text-secondary); text-align: left; padding: 10px 16px; }
+.data-table td { padding: 10px 16px; border-top: 1px solid var(--border); font-size: 14px; }
+.risk-badge {
+  display: inline-block; padding: 2px 10px; border-radius: 12px; color: white;
+  font-size: 13px; font-weight: 600;
+}
+
+/* 위험요인 통계 카드 */
+.hazard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.hazard-stat-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;
+}
+.hazard-stat-title { font-weight: 600; margin-bottom: 4px; }
+.hazard-stat-scene { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
+.hazard-stat-values { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat-item { display: flex; flex-direction: column; }
+.stat-label { font-size: 11px; color: var(--text-secondary); }
+.stat-value { font-size: 15px; font-weight: 600; }
+
+/* 위험도 매트릭스 */
+.matrix-table { border-collapse: collapse; width: 100%; max-width: 500px; }
+.matrix-table th { padding: 8px; font-size: 12px; text-align: center; background: var(--bg); }
+.matrix-table small { color: var(--text-secondary); }
+.matrix-cell {
+  width: 80px; height: 60px; text-align: center; vertical-align: middle;
+  border: 2px solid var(--surface); border-radius: 4px; color: white; position: relative;
+}
+.matrix-score { font-size: 18px; font-weight: 700; }
+.matrix-count { font-size: 11px; }
+.matrix-legend { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.legend-color { width: 14px; height: 14px; border-radius: 3px; }
+
+.empty-msg { color: var(--text-secondary); font-size: 14px; padding: 20px; text-align: center; }
+
+/* === 기관 배지 === */
+.org-badge {
+  display: inline-block; background: #E3F2FD; color: var(--primary);
+  font-size: 13px; font-weight: 600; padding: 4px 14px; border-radius: 16px;
+  margin-bottom: 12px;
+}
+.org-badge:empty { display: none; }
+
+/* === 기관 에러 화면 === */
+.org-error-screen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; background: linear-gradient(135deg, #455A64 0%, #263238 100%);
+  padding: 20px;
+}
+.org-error-card {
+  background: var(--surface); border-radius: 16px; padding: 48px 40px; max-width: 460px;
+  width: 100%; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.org-error-icon {
+  width: 64px; height: 64px; border-radius: 50%; background: #FFF3E0; color: var(--warning);
+  font-size: 36px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+}
+.org-error-title { font-size: 20px; margin-bottom: 12px; }
+.org-error-message { color: var(--text-secondary); font-size: 14px; line-height: 1.7; margin-bottom: 16px; }
+.org-error-detail { font-size: 12px; color: var(--text-secondary); background: var(--bg); padding: 8px 16px; border-radius: var(--radius); display: inline-block; }
+
+/* === 랜딩 페이지 === */
+.landing-screen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
+  padding: 20px;
+}
+.landing-card {
+  background: var(--surface); border-radius: 16px; padding: 48px 40px; max-width: 420px;
+  width: 100%; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.landing-card h1 { font-size: 28px; margin-bottom: 8px; }
+.landing-card .subtitle { color: var(--text-secondary); margin-bottom: 32px; font-size: 14px; }
+.landing-buttons { display: flex; flex-direction: column; gap: 12px; }
+.btn-landing { width: 100%; padding: 14px; font-size: 16px; }
+
+/* === 반응형 === */
+@media (max-width: 600px) {
+  .entry-card { padding: 28px 20px; }
+  .popup { padding: 20px; margin: 10px; }
+  .rating-btn { min-width: 50px; padding: 8px 2px; }
+  .rating-value { font-size: 16px; }
+  .rating-label { font-size: 10px; }
+  .vr-topbar { padding: 8px 12px; }
+  .vr-topbar-left h2 { font-size: 14px; }
+  .scene-nav { top: 50px; }
+  .btn-scene { padding: 5px 10px; font-size: 12px; }
+  .progress-bar { bottom: 70px; left: 10px; right: 10px; }
+  .dashboard { padding: 12px; }
+  .summary-cards { grid-template-columns: repeat(2, 1fr); }
+  .hazard-stats { grid-template-columns: 1fr; }
+}

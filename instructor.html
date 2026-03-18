@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/">
+  <title>VR 안전교육 - 강사 대시보드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="instructor-layout">
+
+  <!-- 0. 기관 에러 화면 -->
+  <div id="org-error-screen" class="org-error-screen" style="display:none">
+    <div class="org-error-card">
+      <div class="org-error-icon">!</div>
+      <h1 class="org-error-title"></h1>
+      <p class="org-error-message"></p>
+      <p class="org-error-detail"></p>
+    </div>
+  </div>
+
+  <!-- 1. 세션 관리 화면 -->
+  <div id="session-manager" class="session-manager">
+    <div id="org-name-display" class="org-badge"></div>
+    <h1>VR 안전교육 - 강사 대시보드</h1>
+
+    <!-- 새 세션 생성 -->
+    <div class="create-session-form">
+      <h3>새 교육 세션 생성</h3>
+      <div class="form-row">
+        <input type="text" id="new-session-name" placeholder="세션명 (예: 3월 신규입사자 교육)">
+        <input type="text" id="new-instructor-name" placeholder="강사명">
+      </div>
+      <button class="btn btn-primary" onclick="InstructorApp.createSession()">세션 생성</button>
+    </div>
+
+    <!-- 활성 세션 목록 -->
+    <h3 style="margin-bottom:12px">활성 세션</h3>
+    <div id="session-list">
+      <p class="empty-msg">불러오는 중...</p>
+    </div>
+  </div>
+
+  <!-- 2. 대시보드 -->
+  <div id="dashboard" class="dashboard" style="display:none">
+    <div class="dashboard-header">
+      <div>
+        <h1 id="dashboard-session-name">세션명</h1>
+      </div>
+      <div class="dashboard-actions">
+        <button class="btn btn-secondary" onclick="InstructorApp._refreshDashboard()">새로고침</button>
+        <button class="btn btn-secondary" onclick="InstructorApp.backToSessions()">세션 목록</button>
+        <button class="btn btn-danger" onclick="InstructorApp.endSession()">세션 종료</button>
+      </div>
+    </div>
+
+    <!-- 요약 카드 -->
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="card-value" id="stat-students">0</div>
+        <div class="card-label">참여 교육생</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-value" id="stat-assessments">0</div>
+        <div class="card-label">총 평가 수</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-value" id="stat-hazards">0</div>
+        <div class="card-label">위험요인 수</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-value" id="stat-avg-risk">-</div>
+        <div class="card-label">평균 위험도</div>
+      </div>
+    </div>
+
+    <!-- 교육생 제출 현황 -->
+    <div class="dashboard-section">
+      <h2>교육생 제출 현황</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>이름</th>
+            <th>소속</th>
+            <th>진행</th>
+            <th>평균 위험도</th>
+            <th>최근 제출</th>
+          </tr>
+        </thead>
+        <tbody id="student-table-body">
+          <tr><td colspan="5" class="empty-msg">아직 제출된 평가가 없습니다.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 위험요인별 통계 -->
+    <div class="dashboard-section">
+      <h2>위험요인별 평가 결과</h2>
+      <div class="hazard-stats" id="hazard-stats"></div>
+    </div>
+
+    <!-- 위험도 매트릭스 -->
+    <div class="dashboard-section">
+      <h2>위험도 매트릭스 (5x4)</h2>
+      <div id="risk-matrix"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/org-context.js"></script>
+  <script src="/js/instructor-app.js"></script>
+</body>
+</html>

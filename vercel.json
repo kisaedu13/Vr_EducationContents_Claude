@@ -1,0 +1,17 @@
+{
+  "rewrites": [
+    { "source": "/edu/:code/student", "destination": "/student.html" },
+    { "source": "/edu/:code/instructor", "destination": "/instructor.html" },
+    { "source": "/edu/:code", "destination": "/index.html" },
+    { "source": "/student", "destination": "/student.html" },
+    { "source": "/instructor", "destination": "/instructor.html" }
+  ],
+  "headers": [
+    {
+      "source": "/vtour/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ]
+}

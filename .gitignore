@@ -1,0 +1,23 @@
+# 원본 파노라마 이미지 (대용량)
+*.png
+!vtour/skin/*.png
+!vtour/plugins/*.png
+
+# krpano 테스트 서버
+vtour/tour_testingserver.exe
+vtour/tour_testingserver_macos
+
+# 환경변수
+.env
+.env.local
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,13 @@
+{
+  "name": "vr-safety-education",
+  "version": "1.0.0",
+  "description": "VR 안전교육 위험성평가 웹 콘텐츠 (krpano + Supabase)",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve . -p 3000 -c vercel.json",
+    "start": "npx serve . -p 3000 -c vercel.json"
+  },
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}

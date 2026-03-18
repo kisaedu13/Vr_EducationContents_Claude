@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <base href="/">
+  <title>VR 안전교육 - 위험성평가</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- 0. 기관 에러 화면 -->
+  <div id="org-error-screen" class="org-error-screen" style="display:none">
+    <div class="org-error-card">
+      <div class="org-error-icon">!</div>
+      <h1 class="org-error-title"></h1>
+      <p class="org-error-message"></p>
+      <p class="org-error-detail"></p>
+    </div>
+  </div>
+
+  <!-- 1. 진입 화면 -->
+  <div id="entry-screen" class="entry-screen">
+    <div class="entry-card">
+      <div id="org-name-display" class="org-badge"></div>
+      <h1>VR 안전교육</h1>
+      <p class="subtitle">360° 가상현실 위험성평가 교육</p>
+      <form id="entry-form">
+        <div class="form-field">
+          <label for="input-name">이름 *</label>
+          <input type="text" id="input-name" placeholder="홍길동" required>
+        </div>
+        <div class="form-field">
+          <label for="input-org">소속</label>
+          <input type="text" id="input-org" placeholder="안전관리팀">
+        </div>
+        <div class="form-field">
+          <label for="input-session">교육 세션 *</label>
+          <select id="input-session" required>
+            <option value="">불러오는 중...</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">교육 시작</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. VR 화면 -->
+  <div id="vr-screen" class="vr-screen" style="display:none">
+    <!-- 상단 바 -->
+    <div class="vr-topbar">
+      <div class="vr-topbar-left">
+        <h2 id="scene-title">작업장</h2>
+      </div>
+      <div class="vr-topbar-right">
+        <span class="student-badge" id="student-name-display"></span>
+        <button class="btn btn-scene" onclick="StudentApp.reset()" style="font-size:12px">나가기</button>
+      </div>
+    </div>
+
+    <!-- 씬 이동 -->
+    <div class="scene-nav" id="scene-buttons"></div>
+
+    <!-- krpano 뷰어 -->
+    <div id="krpano-viewer"></div>
+
+    <!-- 진행률 -->
+    <div class="progress-bar">
+      <span class="progress-bar-label">위험성평가 진행</span>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progress-bar-fill" style="width:0%"></div>
+      </div>
+      <span class="progress-bar-text" id="progress-text">0/0</span>
+    </div>
+  </div>
+
+  <!-- 3. 완료 화면 -->
+  <div id="complete-screen" class="complete-screen" style="display:none">
+    <div class="complete-card">
+      <div class="complete-icon">&#10003;</div>
+      <h1>평가 완료!</h1>
+      <p><strong id="complete-name"></strong>님의 위험성평가가</p>
+      <p>모두 제출되었습니다. (총 <strong id="complete-count"></strong>건)</p>
+      <button class="btn btn-primary" onclick="StudentApp.reset()">처음으로</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/vtour/tour.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/krpano-interface.js"></script>
+  <script src="/js/risk-assessment.js"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/org-context.js"></script>
+  <script src="/js/student-app.js"></script>
+</body>
+</html>

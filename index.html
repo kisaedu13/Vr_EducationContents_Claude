@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <base href="/">
+  <title>VR 안전교육 - 입장</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- 기관 에러 화면 -->
+  <div id="org-error-screen" class="org-error-screen" style="display:none">
+    <div class="org-error-card">
+      <div class="org-error-icon">!</div>
+      <h1 class="org-error-title"></h1>
+      <p class="org-error-message"></p>
+      <p class="org-error-detail"></p>
+    </div>
+  </div>
+
+  <!-- 랜딩 페이지 -->
+  <div id="landing-screen" class="landing-screen">
+    <div class="landing-card">
+      <div id="org-name-display" class="org-badge"></div>
+      <h1>VR 안전교육</h1>
+      <p class="subtitle">360° 가상현실 위험성평가 교육</p>
+      <div class="landing-buttons">
+        <button class="btn btn-primary btn-landing" id="btn-student">교육생 입장</button>
+        <button class="btn btn-secondary btn-landing" id="btn-instructor">강사 입장</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/org-context.js"></script>
+  <script>
+    /**
+     * 랜딩 페이지 초기화
+     * 기관 코드 유무에 따라 역할 선택 또는 안내 메시지 표시
+     */
+    document.addEventListener('DOMContentLoaded', async () => {
+      SupabaseClient.init(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
+
+      const orgCode = OrgContext.parseFromURL();
+
+      if (!orgCode) {
+        // 기관 코드 없이 루트(/) 접속 시 안내
+        document.getElementById('landing-screen').style.display = 'none';
+        const errorScreen = document.getElementById('org-error-screen');
+        errorScreen.style.display = 'flex';
+        errorScreen.querySelector('.org-error-title').textContent = '기관 전용 URL이 필요합니다';
+        errorScreen.querySelector('.org-error-message').innerHTML =
+          '이 서비스는 기관별 전용 URL을 통해 접근할 수 있습니다.<br>교육 담당자에게 전달받은 URL로 접속해주세요.';
+        errorScreen.querySelector('.org-error-detail').textContent = '예시: /edu/abc123';
+        return;
+      }
+
+      // 기관 검증
+      const orgValid = await OrgContext.init();
+      if (!orgValid) {
+        document.getElementById('landing-screen').style.display = 'none';
+        return;
+      }
+
+      // 기관명 표시
+      document.getElementById('org-name-display').textContent = OrgContext.orgName;
+
+      // 역할 선택 버튼
+      const basePath = `/edu/${orgCode}`;
+      document.getElementById('btn-student').addEventListener('click', () => {
+        window.location.href = `${basePath}/student`;
+      });
+      document.getElementById('btn-instructor').addEventListener('click', () => {
+        window.location.href = `${basePath}/instructor`;
+      });
+    });
+  </script>
+</body>
+</html>
