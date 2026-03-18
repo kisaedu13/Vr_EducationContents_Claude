@@ -4,8 +4,8 @@
  */
 
 const APP_CONFIG = {
-  supabaseUrl: '',
-  supabaseAnonKey: '',
+  supabaseUrl: 'https://wqxunwyjplbfneukxgdx.supabase.co',
+  supabaseAnonKey: 'sb_publishable_KSSG99o97B8IsSYL0CRU5Q_iVSz8VUP',
 };
 
 // 위험성평가 5x4 매트릭스 등급 정의
