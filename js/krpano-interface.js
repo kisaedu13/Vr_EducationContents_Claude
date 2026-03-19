@@ -32,18 +32,16 @@ const KrpanoInterface = {
     scene.hazards.forEach((hazard, index) => {
       const hsName = `hs_${hazard.id}`;
 
-      this.krpano.call(`
-        addhotspot(${hsName});
-        set(hotspot[${hsName}].ath, ${hazard.ath});
-        set(hotspot[${hsName}].atv, ${hazard.atv});
-        set(hotspot[${hsName}].url, data:image/svg+xml;base64,${this._createMarkerSVG(index + 1)});
-        set(hotspot[${hsName}].scale, 0.5);
-        set(hotspot[${hsName}].edge, center);
-        set(hotspot[${hsName}].distorted, false);
-        set(hotspot[${hsName}].onclick, js(KrpanoInterface._onHotspotClicked('${hazard.id}')));
-        set(hotspot[${hsName}].onover, tween(scale, 0.6, 0.2));
-        set(hotspot[${hsName}].onout, tween(scale, 0.5, 0.2));
-      `);
+      this.krpano.call(`addhotspot(${hsName})`);
+      this.krpano.set(`hotspot[${hsName}].ath`, hazard.ath);
+      this.krpano.set(`hotspot[${hsName}].atv`, hazard.atv);
+      this.krpano.set(`hotspot[${hsName}].url`, `data:image/svg+xml;base64,${this._createMarkerSVG(index + 1)}`);
+      this.krpano.set(`hotspot[${hsName}].scale`, 0.5);
+      this.krpano.set(`hotspot[${hsName}].edge`, 'center');
+      this.krpano.set(`hotspot[${hsName}].distorted`, false);
+      this.krpano.set(`hotspot[${hsName}].onclick`, `js(KrpanoInterface._onHotspotClicked('${hazard.id}'))`);
+      this.krpano.call(`set(hotspot[${hsName}].onover, tween(scale, 0.6, 0.2))`);
+      this.krpano.call(`set(hotspot[${hsName}].onout, tween(scale, 0.5, 0.2))`);
     });
   },
 

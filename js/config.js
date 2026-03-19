@@ -41,11 +41,23 @@ const SCENE_DATA = {
     hazards: [
       {
         id: 'h1_01',
-        title: '안전모 미착용 작업자',
-        description: '작업자가 안전모를 착용하지 않고 작업 중입니다. 낙하물에 의한 두부 부상 위험이 있습니다.',
-        category: '개인보호구',
+        title: '롤테이너',
+        description: '작업장 내 롤테이너가 이동 중입니다. 주변 근로자의 안전에 주의가 필요합니다.',
+        category: '운반장비',
         ath: -30,
         atv: 5,
+        risks: [
+          {
+            title: '발끼임',
+            image: '/assets/risks/sample_foot_caught.svg',
+            description: '롤테이너 바퀴에 발이 끼일 수 있습니다.',
+          },
+          {
+            title: '다른 근로자와 부딪힘',
+            image: '/assets/risks/sample_collision.svg',
+            description: '이동 중 다른 근로자와 충돌할 수 있습니다.',
+          },
+        ],
       },
       {
         id: 'h1_02',

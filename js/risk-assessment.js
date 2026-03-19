@@ -21,6 +21,24 @@ const RiskAssessment = {
     overlay.id = 'assessment-overlay';
     overlay.className = 'overlay';
 
+    // 주요 위험요인 이미지 카드 렌더링
+    const risksHtml = hazard.risks && hazard.risks.length > 0 ? `
+      <div class="risk-images-section">
+        <h3 class="risk-images-title">주요 위험요인</h3>
+        <div class="risk-images-grid">
+          ${hazard.risks.map(r => `
+            <div class="risk-image-card">
+              <div class="risk-image-wrap">
+                <img src="${r.image}" alt="${r.title}" loading="lazy">
+              </div>
+              <div class="risk-image-label">${r.title}</div>
+              <div class="risk-image-desc">${r.description}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
+
     overlay.innerHTML = `
       <div class="popup assessment-popup">
         <button class="popup-close" onclick="RiskAssessment.closePopup()">&times;</button>
@@ -30,6 +48,8 @@ const RiskAssessment = {
           <h2>${hazard.title}</h2>
           <p>${hazard.description}</p>
         </div>
+
+        ${risksHtml}
 
         <form id="assessment-form" class="assessment-form">
           <div class="form-group">
