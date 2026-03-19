@@ -37,6 +37,31 @@ const SupabaseClient = {
     return data;
   },
 
+  /** 기관의 활성 세션 1개 자동 반환 */
+  async getActiveSession() {
+    if (!this.client) {
+      const sessions = this._localGet('sessions').filter(s => s.is_active && s.org_id === OrgContext.orgId);
+      if (sessions.length > 0) return sessions[0];
+      return this._localCreate('sessions', {
+        session_name: '기본 교육 세션',
+        instructor_name: '',
+        org_id: OrgContext.orgId,
+      });
+    }
+
+    const { data, error } = await this.client
+      .from('sessions')
+      .select('*')
+      .eq('is_active', true)
+      .eq('org_id', OrgContext.orgId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
   /** 활성 세션 목록 조회 (기관별 필터링) */
   async getActiveSessions() {
     if (!this.client) return this._localGet('sessions').filter(s => s.is_active && s.org_id === OrgContext.orgId);

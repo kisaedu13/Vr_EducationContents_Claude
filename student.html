@@ -31,18 +31,12 @@
       <p class="subtitle">360° 가상현실 위험성평가 교육</p>
       <form id="entry-form">
         <div class="form-field">
+          <label for="input-date">교육 일자</label>
+          <input type="text" id="input-date" class="date-display" readonly>
+        </div>
+        <div class="form-field">
           <label for="input-name">이름 *</label>
           <input type="text" id="input-name" placeholder="홍길동" required>
-        </div>
-        <div class="form-field">
-          <label for="input-org">소속</label>
-          <input type="text" id="input-org" placeholder="안전관리팀">
-        </div>
-        <div class="form-field">
-          <label for="input-session">교육 세션 *</label>
-          <select id="input-session" required>
-            <option value="">불러오는 중...</option>
-          </select>
         </div>
         <button type="submit" class="btn btn-primary">교육 시작</button>
       </form>
@@ -85,6 +79,7 @@
       <h1>평가 완료!</h1>
       <p><strong id="complete-name"></strong>님의 위험성평가가</p>
       <p>모두 제출되었습니다. (총 <strong id="complete-count"></strong>건)</p>
+      <div id="complete-results" class="complete-results"></div>
       <button class="btn btn-primary" onclick="StudentApp.reset()">처음으로</button>
     </div>
   </div>

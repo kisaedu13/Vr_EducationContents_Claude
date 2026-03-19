@@ -156,6 +156,55 @@ const RiskAssessment = {
     requestAnimationFrame(() => overlay.classList.add('active'));
   },
 
+  /** 강사용 위험요인별 교육생 결과 팝업 */
+  showHazardResults(hazardId, sceneName, assessments) {
+    const scene = SCENE_DATA[sceneName];
+    if (!scene) return;
+    const hazard = scene.hazards.find(h => h.id === hazardId);
+    if (!hazard) return;
+
+    this.closePopup();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'assessment-overlay';
+    overlay.className = 'overlay';
+
+    let listHtml = '';
+    if (assessments.length === 0) {
+      listHtml = '<p class="empty-msg">아직 제출된 평가가 없습니다.</p>';
+    } else {
+      listHtml = assessments.map(a => {
+        const score = a.likelihood * a.severity;
+        const level = getRiskLevel(score);
+        return `
+          <div class="result-item">
+            <span class="result-name">${a.student_name}</span>
+            <span class="result-values">가능성 ${a.likelihood} × 중대성 ${a.severity}</span>
+            <span class="risk-badge" style="background:${level.color}">${score} ${level.label}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    overlay.innerHTML = `
+      <div class="popup hazard-results-popup">
+        <button class="popup-close" onclick="RiskAssessment.closePopup()">&times;</button>
+        <div class="hazard-info">
+          <span class="hazard-category">${hazard.category}</span>
+          <h2>${hazard.title}</h2>
+          <p>${hazard.description}</p>
+        </div>
+        <div class="results-list">
+          <h3>교육생 평가 결과 (${assessments.length}명)</h3>
+          ${listHtml}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('active'));
+  },
+
   /** 팝업 닫기 */
   closePopup() {
     const existing = document.getElementById('assessment-overlay');

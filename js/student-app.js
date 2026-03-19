@@ -5,9 +5,8 @@
 const StudentApp = {
   sessionId: null,
   studentName: '',
-  studentOrg: '',
   currentScene: null,
-  completedAssessments: {},  // { hazardId: true }
+  completedAssessments: {},  // { hazardId: { likelihood, severity, riskScore, sceneName, hazardTitle } }
 
   /** 앱 초기화 */
   async init() {
@@ -22,16 +21,40 @@ const StudentApp = {
     const orgDisplay = document.getElementById('org-name-display');
     if (orgDisplay) orgDisplay.textContent = OrgContext.orgName;
 
+    // 세션 자동 매칭
+    try {
+      const session = await SupabaseClient.getActiveSession();
+      this.sessionId = session.id;
+    } catch (err) {
+      console.error('세션 로드 실패:', err);
+      this._showSessionError();
+      return;
+    }
+
     // 저장된 학생 정보 복원 (기관별 격리)
     const prefix = OrgContext.orgCode ? `${OrgContext.orgCode}_` : '';
     this.studentName = localStorage.getItem(`${prefix}studentName`) || '';
-    this.studentOrg = localStorage.getItem(`${prefix}studentOrg`) || '';
-    this.sessionId = localStorage.getItem(`${prefix}currentSessionId`) || null;
+    const savedSessionId = localStorage.getItem(`${prefix}currentSessionId`) || null;
 
-    if (this.studentName && this.sessionId) {
+    if (this.studentName && savedSessionId === this.sessionId) {
       this._showVRView();
     } else {
       this._showEntryForm();
+    }
+  },
+
+  /** 세션 없음 에러 표시 */
+  _showSessionError() {
+    document.getElementById('entry-screen').style.display = 'none';
+    document.getElementById('vr-screen').style.display = 'none';
+    document.getElementById('complete-screen').style.display = 'none';
+
+    const errorScreen = document.getElementById('org-error-screen');
+    if (errorScreen) {
+      errorScreen.style.display = 'flex';
+      errorScreen.querySelector('.org-error-title').textContent = '활성 세션 없음';
+      errorScreen.querySelector('.org-error-message').innerHTML = '현재 활성화된 교육 세션이 없습니다.<br>교육 담당자에게 문의해주세요.';
+      errorScreen.querySelector('.org-error-detail').textContent = '';
     }
   },
 
@@ -41,59 +64,27 @@ const StudentApp = {
     document.getElementById('vr-screen').style.display = 'none';
     document.getElementById('complete-screen').style.display = 'none';
 
-    // 세션 목록 로드
-    this._loadSessions();
+    // 오늘 날짜 표시
+    const dateInput = document.getElementById('input-date');
+    if (dateInput) {
+      const now = new Date();
+      dateInput.value = `${now.getFullYear()}년 ${String(now.getMonth() + 1).padStart(2, '0')}월 ${String(now.getDate()).padStart(2, '0')}일`;
+    }
 
     document.getElementById('entry-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('input-name').value.trim();
-      const org = document.getElementById('input-org').value.trim();
-      const sessionId = document.getElementById('input-session').value;
 
-      if (!name || !sessionId) return;
+      if (!name) return;
 
       this.studentName = name;
-      this.studentOrg = org;
-      this.sessionId = sessionId;
 
       const prefix = OrgContext.orgCode ? `${OrgContext.orgCode}_` : '';
       localStorage.setItem(`${prefix}studentName`, name);
-      localStorage.setItem(`${prefix}studentOrg`, org);
-      localStorage.setItem(`${prefix}currentSessionId`, sessionId);
+      localStorage.setItem(`${prefix}currentSessionId`, this.sessionId);
 
       this._showVRView();
     });
-  },
-
-  /** 세션 목록 불러오기 */
-  async _loadSessions() {
-    const select = document.getElementById('input-session');
-    try {
-      let sessions = await SupabaseClient.getActiveSessions();
-      // 로컬 모드에서 세션이 없으면 자동 생성
-      if (sessions.length === 0 && !SupabaseClient.isConnected()) {
-        const localSession = SupabaseClient._localCreate('sessions', {
-          session_name: '로컬 테스트 세션',
-          instructor_name: '테스트',
-          org_id: OrgContext.orgId,
-        });
-        sessions = [localSession];
-      }
-      if (sessions.length === 0) {
-        select.innerHTML = '<option value="">활성 세션이 없습니다</option>';
-        return;
-      }
-      select.innerHTML = '<option value="">세션을 선택하세요</option>' +
-        sessions.map(s => `<option value="${s.id}">${s.session_name}${s.instructor_name ? ` (${s.instructor_name})` : ''}</option>`).join('');
-    } catch (err) {
-      console.error('세션 로드 실패:', err);
-      // 로컬 모드: 자동 세션 생성
-      const localSession = SupabaseClient._localCreate('sessions', {
-        session_name: '로컬 테스트 세션',
-        instructor_name: '테스트',
-      });
-      select.innerHTML = `<option value="${localSession.id}">${localSession.session_name}</option>`;
-    }
   },
 
   /** VR 뷰 표시 */
@@ -166,7 +157,7 @@ const StudentApp = {
       await SupabaseClient.submitAssessment({
         sessionId: this.sessionId,
         studentName: this.studentName,
-        studentOrg: this.studentOrg,
+        studentOrg: '',
         sceneName: result.sceneName,
         hazardId: result.hazardId,
         hazardTitle: result.hazardTitle,
@@ -174,7 +165,13 @@ const StudentApp = {
         severity: result.severity,
       });
 
-      this.completedAssessments[result.hazardId] = true;
+      this.completedAssessments[result.hazardId] = {
+        likelihood: result.likelihood,
+        severity: result.severity,
+        riskScore: result.likelihood * result.severity,
+        sceneName: result.sceneName,
+        hazardTitle: result.hazardTitle,
+      };
       KrpanoInterface.markHotspotCompleted(result.hazardId);
       RiskAssessment.showSubmitSuccess();
       this._updateProgress();
@@ -221,6 +218,49 @@ const StudentApp = {
     document.getElementById('complete-screen').style.display = 'flex';
     document.getElementById('complete-name').textContent = this.studentName;
     document.getElementById('complete-count').textContent = Object.keys(this.completedAssessments).length;
+    this._renderCompleteResults();
+  },
+
+  /** Scene별 완료 결과 렌더링 */
+  _renderCompleteResults() {
+    const container = document.getElementById('complete-results');
+    if (!container) return;
+
+    // Scene별 그룹핑
+    const byScene = {};
+    for (const [hazardId, data] of Object.entries(this.completedAssessments)) {
+      const scene = data.sceneName;
+      if (!byScene[scene]) byScene[scene] = [];
+      byScene[scene].push({ hazardId, ...data });
+    }
+
+    let html = '';
+    for (const [sceneName, hazards] of Object.entries(byScene)) {
+      const sceneInfo = SCENE_DATA[sceneName];
+      const sceneTitle = sceneInfo ? sceneInfo.title : sceneName;
+
+      html += `<div class="scene-result-group">
+        <h3>${sceneTitle}</h3>
+        <div class="scene-result-cards">`;
+
+      for (const h of hazards) {
+        const level = getRiskLevel(h.riskScore);
+        html += `<div class="scene-result-card">
+          <div class="scene-result-title">${h.hazardTitle}</div>
+          <div class="scene-result-values">
+            <span>가능성 ${h.likelihood}</span>
+            <span>×</span>
+            <span>중대성 ${h.severity}</span>
+            <span>=</span>
+            <span class="risk-badge" style="background:${level.color}">${h.riskScore} ${level.label}</span>
+          </div>
+        </div>`;
+      }
+
+      html += `</div></div>`;
+    }
+
+    container.innerHTML = html;
   },
 
   /** 초기화 (다시 시작) */
@@ -228,7 +268,6 @@ const StudentApp = {
     this.completedAssessments = {};
     const prefix = OrgContext.orgCode ? `${OrgContext.orgCode}_` : '';
     localStorage.removeItem(`${prefix}studentName`);
-    localStorage.removeItem(`${prefix}studentOrg`);
     localStorage.removeItem(`${prefix}currentSessionId`);
     location.reload();
   },
