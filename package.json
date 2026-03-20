@@ -4,8 +4,8 @@
   "description": "VR 안전교육 위험성평가 웹 콘텐츠 (krpano + Supabase)",
   "private": true,
   "scripts": {
-    "dev": "npx serve . -p 3000 -c vercel.json",
-    "start": "npx serve . -p 3000 -c vercel.json"
+    "build": "echo 'No build step'",
+    "start": "npx serve . -p 3000"
   },
   "devDependencies": {
     "serve": "^14.0.0"

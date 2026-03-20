@@ -31,16 +31,8 @@ const StudentApp = {
       return;
     }
 
-    // 저장된 학생 정보 복원 (기관별 격리)
-    const prefix = OrgContext.orgCode ? `${OrgContext.orgCode}_` : '';
-    this.studentName = localStorage.getItem(`${prefix}studentName`) || '';
-    const savedSessionId = localStorage.getItem(`${prefix}currentSessionId`) || null;
-
-    if (this.studentName && savedSessionId === this.sessionId) {
-      this._showVRView();
-    } else {
-      this._showEntryForm();
-    }
+    // 항상 이름 입력 폼 표시 (매 접속 시 이름 입력 필수)
+    this._showEntryForm();
   },
 
   /** 세션 없음 에러 표시 */

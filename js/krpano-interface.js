@@ -36,12 +36,13 @@ const KrpanoInterface = {
       this.krpano.set(`hotspot[${hsName}].ath`, hazard.ath);
       this.krpano.set(`hotspot[${hsName}].atv`, hazard.atv);
       this.krpano.set(`hotspot[${hsName}].url`, `data:image/svg+xml;base64,${this._createMarkerSVG(false)}`);
-      this.krpano.set(`hotspot[${hsName}].scale`, 0.5);
+      this.krpano.set(`hotspot[${hsName}].scale`, 0.55);
       this.krpano.set(`hotspot[${hsName}].edge`, 'center');
       this.krpano.set(`hotspot[${hsName}].distorted`, false);
+      this.krpano.set(`hotspot[${hsName}].zoom`, true);
       this.krpano.set(`hotspot[${hsName}].onclick`, `js(KrpanoInterface._onHotspotClicked('${hazard.id}'))`);
-      this.krpano.call(`set(hotspot[${hsName}].onover, tween(scale, 0.6, 0.2))`);
-      this.krpano.call(`set(hotspot[${hsName}].onout, tween(scale, 0.5, 0.2))`);
+      this.krpano.call(`set(hotspot[${hsName}].onover, tween(scale, 0.7, 0.15))`);
+      this.krpano.call(`set(hotspot[${hsName}].onout, tween(scale, 0.55, 0.15))`);
     });
   },
 
@@ -101,28 +102,47 @@ const KrpanoInterface = {
   /** SVG 마커 생성 (Base64) */
   _createMarkerSVG(completed) {
     if (completed) {
-      // 완료 마커: 초록색 체크 아이콘
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
-        <circle cx="40" cy="40" r="28" fill="#4CAF50" opacity="0.85"/>
-        <circle cx="40" cy="40" r="28" fill="none" stroke="white" stroke-width="2" opacity="0.6"/>
-        <polyline points="28,40 36,48 52,32" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      // 완료 마커: 초록색 원 + 체크 아이콘
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+        <defs>
+          <filter id="gs" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.4"/>
+          </filter>
+        </defs>
+        <circle cx="60" cy="60" r="38" fill="#43A047" filter="url(#gs)"/>
+        <circle cx="60" cy="60" r="38" fill="none" stroke="white" stroke-width="3" opacity="0.5"/>
+        <polyline points="42,60 54,72 78,48" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`;
       return btoa(unescape(encodeURIComponent(svg)));
     }
-    // 위험 마커: 삼각형 경고 아이콘 + 펄스 링
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="40" fill="none" stroke="#FF5722" stroke-width="2" opacity="0.6">
-        <animate attributeName="r" values="34;46;34" dur="2.5s" repeatCount="indefinite"/>
-        <animate attributeName="opacity" values="0.6;0;0.6" dur="2.5s" repeatCount="indefinite"/>
+    // 위험 마커: 파란 원형 아이콘 + 펄스 링 + 바운스
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="140" viewBox="0 0 120 140">
+      <defs>
+        <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000" flood-opacity="0.5"/>
+        </filter>
+        <radialGradient id="bg" cx="50%" cy="40%" r="50%">
+          <stop offset="0%" stop-color="#42A5F5"/>
+          <stop offset="100%" stop-color="#1565C0"/>
+        </radialGradient>
+      </defs>
+      <circle cx="60" cy="58" r="44" fill="none" stroke="#42A5F5" stroke-width="2" opacity="0">
+        <animate attributeName="r" values="38;52;38" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.7;0;0.7" dur="2s" repeatCount="indefinite"/>
       </circle>
-      <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,87,34,0.3)" stroke-width="1.5">
-        <animate attributeName="r" values="30;42;30" dur="2.5s" repeatCount="indefinite" begin="0.4s"/>
-        <animate attributeName="opacity" values="0.4;0;0.4" dur="2.5s" repeatCount="indefinite" begin="0.4s"/>
+      <circle cx="60" cy="58" r="44" fill="none" stroke="#42A5F5" stroke-width="1.5" opacity="0">
+        <animate attributeName="r" values="38;48;38" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+        <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite" begin="0.5s"/>
       </circle>
-      <polygon points="50,22 72,62 28,62" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="3" stroke-linejoin="round"/>
-      <polygon points="50,26 69,60 31,60" fill="#FF5722" opacity="0.85" stroke-linejoin="round"/>
-      <line x1="50" y1="36" x2="50" y2="50" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
-      <circle cx="50" cy="56" r="2" fill="white"/>
+      <g filter="url(#ds)">
+        <animateTransform attributeName="transform" type="translate" values="0,0; 0,-6; 0,0" dur="1.8s" repeatCount="indefinite" calcMode="spline" keySplines="0.33,0,0.67,1; 0.33,0,0.67,1"/>
+        <circle cx="60" cy="58" r="34" fill="url(#bg)"/>
+        <circle cx="60" cy="58" r="34" fill="none" stroke="white" stroke-width="2.5" opacity="0.6"/>
+        <circle cx="60" cy="58" r="26" fill="none" stroke="white" stroke-width="1.5" opacity="0.3" stroke-dasharray="4 3"/>
+        <line x1="60" y1="44" x2="60" y2="58" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="60" cy="66" r="2.5" fill="white"/>
+        <polygon points="60,82 54,92 66,92" fill="white" opacity="0.9"/>
+      </g>
     </svg>`;
     return btoa(unescape(encodeURIComponent(svg)));
   },

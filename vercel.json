@@ -1,4 +1,5 @@
 {
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/edu/:code/student", "destination": "/student.html" },
     { "source": "/edu/:code/instructor", "destination": "/instructor.html" },
