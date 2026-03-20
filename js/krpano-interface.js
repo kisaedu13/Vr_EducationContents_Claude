@@ -29,13 +29,13 @@ const KrpanoInterface = {
     const scene = SCENE_DATA[sceneName];
     if (!scene) return;
 
-    scene.hazards.forEach((hazard, index) => {
+    scene.hazards.forEach((hazard) => {
       const hsName = `hs_${hazard.id}`;
 
       this.krpano.call(`addhotspot(${hsName})`);
       this.krpano.set(`hotspot[${hsName}].ath`, hazard.ath);
       this.krpano.set(`hotspot[${hsName}].atv`, hazard.atv);
-      this.krpano.set(`hotspot[${hsName}].url`, `data:image/svg+xml;base64,${this._createMarkerSVG(index + 1)}`);
+      this.krpano.set(`hotspot[${hsName}].url`, `data:image/svg+xml;base64,${this._createMarkerSVG(false)}`);
       this.krpano.set(`hotspot[${hsName}].scale`, 0.5);
       this.krpano.set(`hotspot[${hsName}].edge`, 'center');
       this.krpano.set(`hotspot[${hsName}].distorted`, false);
@@ -89,7 +89,7 @@ const KrpanoInterface = {
     if (!this.krpano) return;
     try {
       this.krpano.set(`hotspot[${hsName}].url`,
-        `data:image/svg+xml;base64,${this._createMarkerSVG('✓', true)}`);
+        `data:image/svg+xml;base64,${this._createMarkerSVG(true)}`);
     } catch (e) { /* hotspot may not exist in current scene */ }
   },
 
@@ -99,16 +99,30 @@ const KrpanoInterface = {
   },
 
   /** SVG 마커 생성 (Base64) */
-  _createMarkerSVG(number, completed) {
-    const fillColor = completed ? '#4CAF50' : '#FF5722';
-    const text = completed ? '✓' : number;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
-      <circle cx="40" cy="40" r="36" fill="${fillColor}" stroke="white" stroke-width="4" opacity="0.9"/>
-      <circle cx="40" cy="40" r="36" fill="none" stroke="${fillColor}" stroke-width="2" opacity="0.5">
-        <animate attributeName="r" values="36;44;36" dur="2s" repeatCount="indefinite"/>
-        <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
+  _createMarkerSVG(completed) {
+    if (completed) {
+      // 완료 마커: 초록색 체크 아이콘
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="28" fill="#4CAF50" opacity="0.85"/>
+        <circle cx="40" cy="40" r="28" fill="none" stroke="white" stroke-width="2" opacity="0.6"/>
+        <polyline points="28,40 36,48 52,32" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+      return btoa(unescape(encodeURIComponent(svg)));
+    }
+    // 위험 마커: 삼각형 경고 아이콘 + 펄스 링
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="40" fill="none" stroke="#FF5722" stroke-width="2" opacity="0.6">
+        <animate attributeName="r" values="34;46;34" dur="2.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.6;0;0.6" dur="2.5s" repeatCount="indefinite"/>
       </circle>
-      <text x="40" y="48" text-anchor="middle" font-size="28" font-weight="bold" fill="white" font-family="Arial">${text}</text>
+      <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,87,34,0.3)" stroke-width="1.5">
+        <animate attributeName="r" values="30;42;30" dur="2.5s" repeatCount="indefinite" begin="0.4s"/>
+        <animate attributeName="opacity" values="0.4;0;0.4" dur="2.5s" repeatCount="indefinite" begin="0.4s"/>
+      </circle>
+      <polygon points="50,22 72,62 28,62" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="3" stroke-linejoin="round"/>
+      <polygon points="50,26 69,60 31,60" fill="#FF5722" opacity="0.85" stroke-linejoin="round"/>
+      <line x1="50" y1="36" x2="50" y2="50" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="50" cy="56" r="2" fill="white"/>
     </svg>`;
     return btoa(unescape(encodeURIComponent(svg)));
   },
