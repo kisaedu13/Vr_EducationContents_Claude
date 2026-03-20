@@ -85,6 +85,11 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 .vr-screen { position: relative; width: 100%; height: 100vh; background: #000; overflow: hidden; }
 #krpano-viewer { width: 100%; height: 100%; }
 
+/* VR 모드 시 일반 UI 숨김 */
+.vr-active .vr-topbar,
+.vr-active .scene-nav,
+.vr-active .result-overlay { display: none !important; }
+
 /* 상단 바 */
 .vr-topbar {
   position: absolute; top: 0; left: 0; right: 0; z-index: 100;

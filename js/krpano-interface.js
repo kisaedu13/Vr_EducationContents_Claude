@@ -7,7 +7,9 @@ const KrpanoInterface = {
   krpano: null,
   onHotspotClick: null,
   onSceneChange: null,
+  onVRModeChange: null,
   currentScene: null,
+  vrMode: false,
 
   /** krpano 임베딩 초기화 */
   init(targetId, xmlPath, callback) {
@@ -87,6 +89,20 @@ const KrpanoInterface = {
   /** 핫스팟 클릭 핸들러 (krpano에서 호출) */
   _onHotspotClicked(hazardId) {
     if (this.onHotspotClick) this.onHotspotClick(hazardId);
+  },
+
+  /** VR 모드 진입 핸들러 (krpano에서 호출) */
+  _onEnterVR() {
+    this.vrMode = true;
+    document.body.classList.add('vr-active');
+    if (this.onVRModeChange) this.onVRModeChange(true);
+  },
+
+  /** VR 모드 해제 핸들러 (krpano에서 호출) */
+  _onExitVR() {
+    this.vrMode = false;
+    document.body.classList.remove('vr-active');
+    if (this.onVRModeChange) this.onVRModeChange(false);
   },
 
   /** SVG 정보 마커 생성 (Base64) */
