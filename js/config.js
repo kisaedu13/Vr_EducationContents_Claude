@@ -16,17 +16,17 @@ const RISK_LEVELS = {
   CRITICAL: { min: 16, max: 20, label: '매우위험', color: '#D32F2F', bgColor: '#FFEBEE' },
 };
 
-// 가능성 단계
-const LIKELIHOOD_LABELS = {
-  1: '거의 없음',
-  2: '낮음',
-  3: '보통',
-  4: '높음',
-  5: '매우 높음',
+// 빈도 단계
+const FREQUENCY_LABELS = {
+  1: '거의없음',
+  2: '가끔',
+  3: '때때로',
+  4: '자주',
+  5: '매우자주',
 };
 
-// 중대성 단계
-const SEVERITY_LABELS = {
+// 강도 단계
+const INTENSITY_LABELS = {
   1: '경미',
   2: '상해',
   3: '중상해',

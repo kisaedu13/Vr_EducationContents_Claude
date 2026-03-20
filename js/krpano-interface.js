@@ -35,7 +35,7 @@ const KrpanoInterface = {
       this.krpano.call(`addhotspot(${hsName})`);
       this.krpano.set(`hotspot[${hsName}].ath`, hazard.ath);
       this.krpano.set(`hotspot[${hsName}].atv`, hazard.atv);
-      this.krpano.set(`hotspot[${hsName}].url`, `data:image/svg+xml;base64,${this._createMarkerSVG(false)}`);
+      this.krpano.set(`hotspot[${hsName}].url`, `data:image/svg+xml;base64,${this._createMarkerSVG()}`);
       this.krpano.set(`hotspot[${hsName}].scale`, 0.55);
       this.krpano.set(`hotspot[${hsName}].edge`, 'center');
       this.krpano.set(`hotspot[${hsName}].distorted`, false);
@@ -84,38 +84,13 @@ const KrpanoInterface = {
     }
   },
 
-  /** 핫스팟 완료 표시 (평가 완료 시 색상 변경) */
-  markHotspotCompleted(hazardId) {
-    const hsName = `hs_${hazardId}`;
-    if (!this.krpano) return;
-    try {
-      this.krpano.set(`hotspot[${hsName}].url`,
-        `data:image/svg+xml;base64,${this._createMarkerSVG(true)}`);
-    } catch (e) { /* hotspot may not exist in current scene */ }
-  },
-
   /** 핫스팟 클릭 핸들러 (krpano에서 호출) */
   _onHotspotClicked(hazardId) {
     if (this.onHotspotClick) this.onHotspotClick(hazardId);
   },
 
-  /** SVG 마커 생성 (Base64) */
-  _createMarkerSVG(completed) {
-    if (completed) {
-      // 완료 마커: 초록색 원 + 체크 아이콘
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
-        <defs>
-          <filter id="gs" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.4"/>
-          </filter>
-        </defs>
-        <circle cx="60" cy="60" r="38" fill="#43A047" filter="url(#gs)"/>
-        <circle cx="60" cy="60" r="38" fill="none" stroke="white" stroke-width="3" opacity="0.5"/>
-        <polyline points="42,60 54,72 78,48" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>`;
-      return btoa(unescape(encodeURIComponent(svg)));
-    }
-    // 위험 마커: 파란 원형 아이콘 + 펄스 링 + 바운스
+  /** SVG 정보 마커 생성 (Base64) */
+  _createMarkerSVG() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="140" viewBox="0 0 120 140">
       <defs>
         <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">

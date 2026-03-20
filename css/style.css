@@ -18,7 +18,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 16px; color: var(--text); background: var(--bg); }
 button { cursor: pointer; font-family: inherit; }
-input, select { font-family: inherit; font-size: inherit; }
+input, select, textarea { font-family: inherit; font-size: inherit; }
 
 /* === 버튼 === */
 .btn {
@@ -39,6 +39,26 @@ input, select { font-family: inherit; font-size: inherit; }
 }
 .btn-scene.active { background: var(--primary); border-color: var(--primary); }
 .btn-scene:hover { background: rgba(255,255,255,0.25); }
+
+/* 위험성평가 버튼 (눈에 띄는 스타일 + 펄스 애니메이션) */
+.btn-assess {
+  background: var(--danger); color: white; border: none;
+  padding: 6px 16px; font-size: 13px; font-weight: 700; border-radius: 20px;
+  animation: pulse-assess 2s infinite;
+}
+.btn-assess:hover { background: #B71C1C; animation: none; }
+
+@keyframes pulse-assess {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(211, 47, 47, 0); }
+}
+
+/* 내 평가 버튼 */
+.btn-assess-list {
+  background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4);
+  padding: 6px 14px; font-size: 13px; font-weight: 600; border-radius: 20px;
+}
+.btn-assess-list:hover { background: rgba(255,255,255,0.3); }
 
 /* === 교육생 진입 화면 === */
 .entry-screen {
@@ -87,17 +107,6 @@ input, select { font-family: inherit; font-size: inherit; }
   display: flex; gap: 8px;
 }
 
-/* 진행률 */
-.progress-bar {
-  position: absolute; bottom: 80px; left: 16px; right: 16px; z-index: 100;
-  background: rgba(0,0,0,0.5); border-radius: 20px; padding: 8px 16px;
-  display: flex; align-items: center; gap: 12px;
-}
-.progress-bar-label { color: white; font-size: 13px; white-space: nowrap; }
-.progress-bar-track { flex: 1; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; }
-.progress-bar-fill { height: 100%; background: var(--success); border-radius: 3px; transition: width 0.3s; }
-.progress-bar-text { color: white; font-size: 13px; font-weight: 600; }
-
 /* === 팝업 오버레이 === */
 .overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000;
@@ -106,7 +115,7 @@ input, select { font-family: inherit; font-size: inherit; }
 }
 .overlay.active { opacity: 1; }
 .popup {
-  background: var(--surface); border-radius: 16px; padding: 28px; max-width: 460px;
+  background: var(--surface); border-radius: 16px; padding: 32px; max-width: 460px;
   width: 100%; max-height: 90vh; overflow-y: auto; position: relative;
   box-shadow: 0 16px 48px rgba(0,0,0,0.3);
   transform: translateY(20px); transition: transform 0.2s;
@@ -153,55 +162,261 @@ input, select { font-family: inherit; font-size: inherit; }
 }
 
 /* 평가 폼 */
-.assessment-form .form-group { margin-bottom: 20px; }
-.assessment-form .form-group > label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
-.rating-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
-.rating-btn {
-  flex: 1; min-width: 60px; padding: 10px 4px; border: 2px solid var(--border);
-  border-radius: var(--radius); background: var(--surface); text-align: center; transition: all 0.15s;
+.assessment-popup .form-group { margin-bottom: 22px; }
+.assessment-popup .form-group > label {
+  display: block; font-size: 13px; font-weight: 700; margin-bottom: 10px;
+  color: var(--text); letter-spacing: 0.02em; text-transform: uppercase;
 }
-.rating-btn:hover { border-color: var(--primary); background: #E3F2FD; }
-.rating-btn.selected { border-color: var(--primary); background: var(--primary); color: white; }
-.rating-value { display: block; font-size: 20px; font-weight: 700; }
-.rating-label { display: block; font-size: 11px; margin-top: 2px; }
-.rating-btn.selected .rating-label { color: rgba(255,255,255,0.9); }
+.assessment-popup .form-group > label::after {
+  content: ''; display: block; width: 24px; height: 2px;
+  background: var(--primary); margin-top: 4px; border-radius: 1px;
+}
 
-/* 위험도 결과 */
+/* 레이팅 버튼 — 세그먼티드 필 스타일 */
+.rating-buttons { display: flex; gap: 6px; }
+.rating-btn {
+  flex: 1; min-width: 0; padding: 10px 4px; border: 2px solid var(--border);
+  border-radius: 12px; background: var(--surface); text-align: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
+}
+.rating-btn:hover {
+  border-color: var(--primary); background: #E3F2FD;
+  transform: translateY(-2px); box-shadow: 0 4px 8px rgba(25, 118, 210, 0.12);
+}
+.rating-btn.selected {
+  border-color: var(--primary); background: var(--primary); color: white;
+  transform: translateY(-2px); box-shadow: 0 4px 14px rgba(25, 118, 210, 0.35);
+}
+.rating-value { display: block; font-size: 22px; font-weight: 800; line-height: 1.1; }
+.rating-label { display: block; font-size: 10px; margin-top: 3px; opacity: 0.65; line-height: 1.3; }
+.rating-btn.selected .rating-label { color: rgba(255,255,255,0.9); opacity: 1; }
+
+/* textarea 폼 필드 */
+.form-textarea {
+  width: 100%; padding: 12px 16px; border: 2px solid var(--border); border-radius: 12px;
+  font-size: 14px; line-height: 1.6; resize: vertical;
+  transition: border-color 0.2s, box-shadow 0.2s; font-family: inherit; background: var(--surface);
+}
+.form-textarea:focus {
+  outline: none; border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+/* 위험도 결과 — 라운디드 스퀘어 스코어 */
 .risk-result {
-  display: flex; align-items: center; gap: 12px; padding: 16px;
-  background: var(--bg); border-radius: var(--radius); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 16px; padding: 18px 22px;
+  background: linear-gradient(135deg, #FAFAFA 0%, #F0F0F0 100%);
+  border-radius: 14px; margin-bottom: 20px;
+  border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 .risk-score {
-  width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-size: 22px; font-weight: 700; color: white; flex-shrink: 0;
+  width: 54px; height: 54px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800; color: white; flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2); letter-spacing: -0.5px;
 }
-.risk-label { font-size: 18px; font-weight: 700; }
+.risk-result-text { flex: 1; }
+.risk-result-title { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+.risk-result-formula { font-size: 16px; font-weight: 800; color: var(--text); margin-top: 3px; }
 
-.btn-submit { width: 100%; padding: 14px; font-size: 16px; }
+.btn-submit {
+  width: 100%; padding: 14px; font-size: 15px; font-weight: 700;
+  border-radius: 12px; letter-spacing: 0.02em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-submit:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3); }
+.btn-submit:not(:disabled):active { transform: translateY(0); }
+.btn-back {
+  width: 100%; padding: 10px; font-size: 14px; margin-top: 8px;
+  background: none; border: none; color: var(--text-secondary); font-weight: 500;
+  transition: color 0.15s;
+}
+.btn-back:hover { color: var(--text); }
+
+/* === 스텝 전환 애니메이션 === */
+.assess-step {
+  display: none; opacity: 0; transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.assess-step.assess-step-visible {
+  display: block; opacity: 1; transform: translateY(0);
+}
+
+/* === 스텝 인디케이터 === */
+.step-indicator {
+  display: flex; align-items: center; justify-content: center; gap: 0;
+  margin-bottom: 28px; padding: 0 8px;
+}
+.step-item {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  position: relative; z-index: 1;
+}
+.step-circle {
+  width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; background: var(--bg); color: var(--text-secondary);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid var(--border);
+}
+.step-text {
+  font-size: 11px; color: var(--text-secondary); white-space: nowrap;
+  transition: all 0.3s; font-weight: 600;
+}
+.step-item.active .step-circle {
+  background: var(--primary); color: white;
+  border-color: var(--primary); box-shadow: 0 3px 10px rgba(25, 118, 210, 0.35);
+  transform: scale(1.1);
+}
+.step-item.active .step-text { color: var(--primary); font-weight: 700; }
+.step-item.completed .step-circle {
+  background: var(--success); color: white; border-color: var(--success);
+}
+.step-item.completed .step-text { color: var(--success); }
+.step-line {
+  flex: 1; height: 2px; background: var(--border); min-width: 28px;
+  margin: 0 6px; margin-bottom: 20px; border-radius: 1px;
+  transition: background 0.35s;
+}
+.step-line.step-line-active { background: var(--success); }
+
+/* === Step 2 질문 텍스트 === */
+.step2-question {
+  font-size: 16px; font-weight: 800; text-align: center;
+  margin-bottom: 20px; color: var(--text); letter-spacing: -0.02em;
+}
+
+/* === 허용 가능/불가능 버튼 === */
+.accept-buttons { display: flex; gap: 12px; margin-bottom: 8px; }
+.accept-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 22px 14px; border-radius: 16px; border: 2px solid var(--border);
+  background: var(--surface); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); text-align: center;
+}
+.accept-btn .accept-icon { font-size: 28px; font-weight: 700; transition: all 0.25s; line-height: 1; }
+.accept-btn .accept-text { font-size: 15px; font-weight: 700; transition: color 0.2s; }
+.accept-btn .accept-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+/* 허용 가능 — 기본 상태부터 초록 힌트 */
+.accept-btn.acceptable { border-color: #C8E6C9; background: #FCFFF9; }
+.accept-btn.acceptable .accept-icon { color: #81C784; }
+.accept-btn.acceptable:hover {
+  border-color: var(--success); background: #E8F5E9;
+  transform: translateY(-3px); box-shadow: 0 8px 20px rgba(76, 175, 80, 0.2);
+}
+.accept-btn.acceptable:hover .accept-icon { color: var(--success); transform: scale(1.15); }
+.accept-btn.acceptable:hover .accept-text { color: var(--success); }
+/* 허용 불가능 — 기본 상태부터 빨강 힌트 */
+.accept-btn.unacceptable { border-color: #FFCDD2; background: #FFFAFA; }
+.accept-btn.unacceptable .accept-icon { color: #E57373; }
+.accept-btn.unacceptable:hover {
+  border-color: var(--danger); background: #FFEBEE;
+  transform: translateY(-3px); box-shadow: 0 8px 20px rgba(211, 47, 47, 0.2);
+}
+.accept-btn.unacceptable:hover .accept-icon { color: var(--danger); transform: scale(1.15); }
+.accept-btn.unacceptable:hover .accept-text { color: var(--danger); }
+/* 클릭 피드백 */
+.accept-btn:active { transform: scale(0.97) !important; box-shadow: none !important; }
+.accept-btn.acceptable:active { background: #C8E6C9; border-color: #388E3C; }
+.accept-btn.unacceptable:active { background: #FFCDD2; border-color: #C62828; }
+
+/* === 허용 여부 배지 === */
+.accept-badge {
+  display: inline-block; padding: 3px 10px; border-radius: 12px;
+  font-size: 12px; font-weight: 600; line-height: 1.4;
+}
+.accept-badge.acceptable { background: #E8F5E9; color: var(--success); }
+.accept-badge.unacceptable { background: #FFEBEE; color: var(--danger); }
+
+/* === 스텝 요약 카드 === */
+.step-summary {
+  background: var(--bg); border-radius: 12px; padding: 14px 16px;
+  margin-bottom: 20px; border: 1px solid var(--border);
+}
+.summary-card-inner { font-size: 14px; }
+.summary-row {
+  display: flex; gap: 10px; padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-label {
+  font-size: 11px; font-weight: 700; color: var(--text-secondary);
+  min-width: 76px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.03em;
+  padding-top: 2px;
+}
+.summary-value { font-size: 14px; color: var(--text); word-break: break-all; font-weight: 500; }
+
+/* === 감소대책 + 재평가 영역 (Step 3) === */
+.assess-revised-section {
+  margin-bottom: 16px; padding: 20px; background: #FAFBFF;
+  border-radius: 14px; border: 1px solid #E0E7FF;
+}
+.revised-section-title {
+  font-size: 13px; font-weight: 800; color: var(--primary); margin-bottom: 18px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  display: flex; align-items: center; gap: 8px;
+}
+.revised-section-title::before {
+  content: ''; display: block; width: 4px; height: 18px;
+  background: var(--primary); border-radius: 2px;
+}
+
+/* === 감소대책 정보 (내 평가 / 강사 결과) === */
+.assess-revised-info {
+  border-top: 2px dashed var(--border); margin-top: 8px; padding-top: 8px;
+}
+
+/* === Scene별 그룹 헤더 (내 평가 목록) === */
+.scene-group { margin-bottom: 16px; }
+.scene-group-header {
+  font-size: 14px; font-weight: 700; color: var(--primary); padding: 10px 14px;
+  background: #E3F2FD; border-radius: var(--radius); margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.scene-group-count {
+  font-size: 12px; font-weight: 600; color: var(--text-secondary);
+  background: white; padding: 2px 8px; border-radius: 10px;
+}
+
+/* === 강사 오버레이 - 카드 보더 상태 === */
+.overlay-card-acceptable { border-left: 4px solid var(--success); }
+.overlay-card-unacceptable { border-left: 4px solid var(--danger); }
+.overlay-assess-badges { display: flex; align-items: center; gap: 6px; }
+
+/* === 내 평가 목록 카드 === */
+.my-assessment-item {
+  background: var(--bg); border-radius: var(--radius); padding: 12px;
+  margin-bottom: 8px; border: 1px solid var(--border);
+}
+.my-assess-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.my-assess-num {
+  font-size: 12px; font-weight: 700; color: var(--primary);
+  background: #E3F2FD; padding: 2px 8px; border-radius: 10px;
+}
+.my-assess-scene {
+  font-size: 13px; color: var(--text-secondary); flex: 1;
+}
+.my-assess-body { font-size: 13px; line-height: 1.7; }
+.my-assess-field { margin-bottom: 2px; }
+
+/* === 강사 오버레이 - 교육생 평가 카드 === */
+.overlay-assessment-card {
+  background: var(--bg); border-radius: var(--radius); padding: 14px;
+  margin-bottom: 10px; border: 1px solid var(--border);
+}
+.overlay-assess-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+}
+.overlay-assess-body { font-size: 13px; line-height: 1.7; }
+.overlay-assess-field { margin-bottom: 2px; }
 
 /* === 토스트 === */
 .toast {
   position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
   padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500;
   color: white; z-index: 2000; opacity: 0; transition: all 0.3s; white-space: nowrap;
+  max-width: 90vw; overflow: hidden; text-overflow: ellipsis;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast-success { background: var(--success); }
 .toast-info { background: var(--primary); }
-
-/* === 완료 화면 === */
-.complete-screen {
-  display: flex; align-items: center; justify-content: center; min-height: 100vh;
-  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%); padding: 20px; text-align: center;
-}
-.complete-card {
-  background: var(--surface); border-radius: 16px; padding: 48px 40px; max-width: 420px; width: 100%;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-}
-.complete-icon { font-size: 64px; margin-bottom: 16px; }
-.complete-card h1 { font-size: 24px; margin-bottom: 12px; }
-.complete-card p { color: var(--text-secondary); margin-bottom: 8px; }
-.complete-card .btn { margin-top: 24px; }
 
 /* === 강사 대시보드 === */
 .instructor-layout { min-height: 100vh; background: var(--bg); }
@@ -331,19 +546,6 @@ input, select { font-family: inherit; font-size: inherit; }
   cursor: default !important; font-weight: 500;
 }
 
-/* === 교육생 완료 - Scene별 결과 === */
-.complete-results { margin-top: 24px; text-align: left; width: 100%; }
-.scene-result-group { margin-bottom: 20px; }
-.scene-result-group h3 { font-size: 14px; color: var(--primary); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
-.scene-result-cards { display: flex; flex-direction: column; gap: 8px; }
-.scene-result-card {
-  background: var(--bg); border-radius: var(--radius); padding: 12px;
-}
-.scene-result-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-.scene-result-values {
-  display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); flex-wrap: wrap;
-}
-
 /* === 강사 배지 === */
 .instructor-badge {
   background: #FF9800; color: white; padding: 4px 12px;
@@ -353,39 +555,97 @@ input, select { font-family: inherit; font-size: inherit; }
 /* === 강사 결과 오버레이 패널 === */
 .result-overlay {
   position: absolute; top: 0; right: 0; bottom: 0; z-index: 100;
-  width: 340px; background: rgba(0,0,0,0.85);
+  width: 420px; background: rgba(0,0,0,0.88);
   display: flex; flex-direction: column;
   transition: transform 0.3s ease;
 }
 .result-overlay.collapsed { transform: translateX(100%); }
 .overlay-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
 }
-.overlay-header h3 { color: white; font-size: 15px; margin: 0; }
+.overlay-header h3 { color: white; font-size: 18px; font-weight: 700; margin: 0; }
 .overlay-close {
   background: none; border: none; color: rgba(255,255,255,0.6);
-  font-size: 22px; line-height: 1; padding: 0;
+  font-size: 26px; line-height: 1; padding: 0;
 }
 .overlay-close:hover { color: white; }
-.overlay-content { flex: 1; overflow-y: auto; padding: 12px; }
+.overlay-content { flex: 1; overflow-y: auto; padding: 14px; }
 .overlay-summary {
-  display: flex; justify-content: space-between; padding: 10px 12px;
-  background: rgba(255,255,255,0.08); border-radius: var(--radius); margin-bottom: 12px;
-  font-size: 13px; color: rgba(255,255,255,0.7);
+  display: flex; justify-content: space-between; padding: 12px 16px;
+  background: rgba(255,255,255,0.08); border-radius: 10px; margin-bottom: 14px;
+  font-size: 15px; color: rgba(255,255,255,0.7);
 }
-.overlay-summary strong { color: white; }
+.overlay-summary strong { color: white; font-size: 16px; }
+
+/* 카드 기본 */
 .overlay-hazard-card {
   background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-  border-radius: var(--radius); padding: 12px; margin-bottom: 8px;
-  cursor: pointer; transition: background 0.15s;
+  border-radius: 12px; padding: 16px 18px; margin-bottom: 12px;
+  transition: background 0.15s;
 }
-.overlay-hazard-card:hover { background: rgba(255,255,255,0.12); }
-.overlay-hazard-title { color: white; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-.overlay-hazard-meta { color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 8px; }
-.overlay-hazard-stats { display: flex; align-items: center; justify-content: space-between; }
-.overlay-stat { color: rgba(255,255,255,0.7); font-size: 13px; }
-.overlay-hazard-empty { color: rgba(255,255,255,0.3); font-size: 13px; }
+.overlay-hazard-card:hover { background: rgba(255,255,255,0.1); }
+.overlay-hazard-empty { color: rgba(255,255,255,0.4); font-size: 16px; }
+
+/* 카드 — 이름 (소형) */
+.ov-name {
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5);
+  margin-bottom: 10px; padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* 카드 — 정보 구간 */
+.ov-section { margin-bottom: 10px; }
+.ov-row-label {
+  font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.4);
+  margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.ov-row-value {
+  font-size: 16px; color: rgba(255,255,255,0.95); line-height: 1.6;
+  font-weight: 500;
+}
+
+/* 카드 — 위험성 계산 */
+.ov-risk-calc {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 16px; color: rgba(255,255,255,0.9); font-weight: 600;
+}
+.risk-badge-lg {
+  font-size: 16px; font-weight: 800; padding: 4px 14px; border-radius: 8px;
+}
+
+/* 카드 — 허용 상태 */
+.ov-status {
+  margin-top: 8px; padding: 8px 14px; border-radius: 8px;
+  font-size: 15px; font-weight: 700; text-align: center;
+}
+.ov-status-ok {
+  background: rgba(76, 175, 80, 0.18); color: #66BB6A;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+.ov-status-no {
+  background: rgba(211, 47, 47, 0.18); color: #EF5350;
+  border: 1px solid rgba(211, 47, 47, 0.3);
+}
+
+/* 카드 — 감소대책 구간 */
+.ov-revised {
+  margin-top: 12px; padding: 14px; border-radius: 10px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+}
+.ov-revised .ov-row-label { color: rgba(255,255,255,0.45); margin-bottom: 5px; }
+.ov-revised .ov-row-value {
+  font-size: 15px; color: rgba(255,255,255,0.85); margin-bottom: 10px;
+}
+.ov-revised-score {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 15px; color: rgba(255,255,255,0.7); font-weight: 600;
+  padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);
+}
+.ov-improved {
+  font-size: 14px; font-weight: 800; color: #66BB6A;
+  background: rgba(76, 175, 80, 0.18); padding: 3px 10px; border-radius: 8px;
+}
 
 /* === 강사 결과 팝업 === */
 .results-list { margin-top: 16px; }
@@ -403,7 +663,7 @@ input, select { font-family: inherit; font-size: inherit; }
   /* 강사 오버레이 → 하단 서랍 */
   .result-overlay {
     top: auto; left: 0; right: 0; bottom: 0;
-    width: 100%; height: 45vh; max-height: 400px;
+    width: 100%; height: 50vh; max-height: 480px;
     border-radius: 16px 16px 0 0;
   }
   .result-overlay.collapsed { transform: translateY(100%); }
@@ -411,16 +671,39 @@ input, select { font-family: inherit; font-size: inherit; }
 
 @media (max-width: 600px) {
   .entry-card { padding: 28px 20px; }
-  .popup { padding: 20px; margin: 10px; }
-  .rating-btn { min-width: 50px; padding: 8px 2px; }
-  .rating-value { font-size: 16px; }
-  .rating-label { font-size: 10px; }
+  .popup { padding: 22px 18px; margin: 8px; }
+  .rating-buttons { gap: 4px; }
+  .rating-btn { min-width: 0; padding: 8px 2px; border-radius: 10px; }
+  .rating-value { font-size: 18px; }
+  .rating-label { font-size: 9px; }
   .vr-topbar { padding: 8px 12px; }
   .vr-topbar-left h2 { font-size: 14px; }
+  .vr-topbar-right { flex-wrap: wrap; gap: 6px; }
   .scene-nav { top: 50px; }
   .btn-scene { padding: 5px 10px; font-size: 12px; }
-  .progress-bar { bottom: 70px; left: 10px; right: 10px; }
+  .btn-assess { padding: 5px 12px; font-size: 12px; }
+  .btn-assess-list { padding: 5px 10px; font-size: 12px; }
   .dashboard { padding: 12px; }
   .summary-cards { grid-template-columns: repeat(2, 1fr); }
   .hazard-stats { grid-template-columns: 1fr; }
+  /* 스텝 인디케이터 축소 */
+  .step-circle { width: 28px; height: 28px; font-size: 12px; }
+  .step-text { font-size: 10px; }
+  .step-line { min-width: 14px; }
+  /* 허용 버튼 축소 */
+  .accept-btn { padding: 16px 10px; border-radius: 12px; }
+  .accept-btn .accept-icon { font-size: 22px; }
+  .accept-btn .accept-text { font-size: 13px; }
+  .accept-btn .accept-desc { font-size: 10px; }
+  .step2-question { font-size: 14px; }
+  /* 요약 카드 */
+  .summary-row { flex-direction: column; gap: 3px; }
+  .summary-label { min-width: auto; font-size: 10px; }
+  .summary-value { font-size: 13px; }
+  /* 감소대책 영역 */
+  .assess-revised-section { padding: 14px; }
+  .assessment-popup .form-group > label { font-size: 12px; }
+  /* 위험도 결과 */
+  .risk-result { padding: 14px 16px; gap: 12px; }
+  .risk-score { width: 46px; height: 46px; border-radius: 12px; font-size: 18px; }
 }

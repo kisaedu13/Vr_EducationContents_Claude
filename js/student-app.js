@@ -6,7 +6,7 @@ const StudentApp = {
   sessionId: null,
   studentName: '',
   currentScene: null,
-  completedAssessments: {},  // { hazardId: { likelihood, severity, riskScore, sceneName, hazardTitle } }
+  myAssessments: [],  // [{ sceneName, hazardDescription, frequency, intensity, riskScore, isAcceptable, reductionMeasures, revisedFrequency, revisedIntensity, revisedRiskScore }]
 
   /** 앱 초기화 */
   async init() {
@@ -39,7 +39,6 @@ const StudentApp = {
   _showSessionError() {
     document.getElementById('entry-screen').style.display = 'none';
     document.getElementById('vr-screen').style.display = 'none';
-    document.getElementById('complete-screen').style.display = 'none';
 
     const errorScreen = document.getElementById('org-error-screen');
     if (errorScreen) {
@@ -54,7 +53,6 @@ const StudentApp = {
   _showEntryForm() {
     document.getElementById('entry-screen').style.display = 'flex';
     document.getElementById('vr-screen').style.display = 'none';
-    document.getElementById('complete-screen').style.display = 'none';
 
     // 오늘 날짜 표시
     const dateInput = document.getElementById('input-date');
@@ -83,7 +81,6 @@ const StudentApp = {
   _showVRView() {
     document.getElementById('entry-screen').style.display = 'none';
     document.getElementById('vr-screen').style.display = 'block';
-    document.getElementById('complete-screen').style.display = 'none';
 
     // 학생 이름 표시
     document.getElementById('student-name-display').textContent = this.studentName;
@@ -94,17 +91,9 @@ const StudentApp = {
       KrpanoInterface.loadScene(firstScene);
     });
 
-    // 핫스팟 클릭 핸들러
+    // 핫스팟 클릭 → 정보 팝업만 표시
     KrpanoInterface.onHotspotClick = (hazardId) => {
-      if (this.completedAssessments[hazardId]) {
-        this._showAlreadyCompleted(hazardId);
-        return;
-      }
-      RiskAssessment.showAssessmentForm(
-        hazardId,
-        KrpanoInterface.currentScene,
-        (result) => this._handleSubmit(result)
-      );
+      RiskAssessment.showHazardInfoPopup(hazardId, KrpanoInterface.currentScene);
     };
 
     // 씬 변경 핸들러
@@ -115,7 +104,7 @@ const StudentApp = {
 
     // 씬 이동 버튼
     this._renderSceneButtons();
-    this._updateProgress();
+    this._updateAssessmentCount();
   },
 
   /** 씬 이동 버튼 렌더링 */
@@ -140,7 +129,20 @@ const StudentApp = {
     if (scene) {
       document.getElementById('scene-title').textContent = scene.title;
     }
-    this._updateProgress();
+  },
+
+  /** "위험성평가" 버튼 클릭 핸들러 */
+  openAssessmentForm() {
+    if (!this.currentScene) return;
+    RiskAssessment.showSceneAssessmentForm(
+      this.currentScene,
+      (result) => this._handleSubmit(result)
+    );
+  },
+
+  /** "내 평가" 목록 표시 */
+  showMyAssessments() {
+    RiskAssessment.showMyAssessments(this.myAssessments);
   },
 
   /** 평가 제출 처리 */
@@ -151,113 +153,34 @@ const StudentApp = {
         studentName: this.studentName,
         studentOrg: '',
         sceneName: result.sceneName,
-        hazardId: result.hazardId,
-        hazardTitle: result.hazardTitle,
-        likelihood: result.likelihood,
-        severity: result.severity,
+        hazardDescription: result.hazardDescription,
+        frequency: result.frequency,
+        intensity: result.intensity,
+        reductionMeasures: result.reductionMeasures,
+        isAcceptable: result.isAcceptable,
+        revisedFrequency: result.revisedFrequency,
+        revisedIntensity: result.revisedIntensity,
       });
 
-      this.completedAssessments[result.hazardId] = {
-        likelihood: result.likelihood,
-        severity: result.severity,
-        riskScore: result.likelihood * result.severity,
-        sceneName: result.sceneName,
-        hazardTitle: result.hazardTitle,
-      };
-      KrpanoInterface.markHotspotCompleted(result.hazardId);
+      this.myAssessments.unshift(result);
       RiskAssessment.showSubmitSuccess();
-      this._updateProgress();
-
-      // 전체 완료 확인
-      const totalHazards = getAllHazards().length;
-      const completed = Object.keys(this.completedAssessments).length;
-      if (completed >= totalHazards) {
-        setTimeout(() => this._showCompleteScreen(), 1500);
-      }
+      this._updateAssessmentCount();
     } catch (err) {
       console.error('제출 실패:', err);
-      alert('제출에 실패했습니다. 다시 시도해주세요.');
+      const msg = err?.message || err?.details || JSON.stringify(err);
+      alert(`제출에 실패했습니다.\n${msg}`);
     }
   },
 
-  /** 이미 완료된 위험요인 알림 */
-  _showAlreadyCompleted(hazardId) {
-    const hazard = getAllHazards().find(h => h.id === hazardId);
-    const toast = document.createElement('div');
-    toast.className = 'toast toast-info';
-    toast.textContent = `"${hazard?.title}" - 이미 평가 완료`;
-    document.body.appendChild(toast);
-    requestAnimationFrame(() => toast.classList.add('show'));
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => toast.remove(), 300);
-    }, 2000);
+  /** 제출 건수 카운터 업데이트 */
+  _updateAssessmentCount() {
+    const countEl = document.getElementById('my-assessment-count');
+    if (countEl) countEl.textContent = this.myAssessments.length;
   },
 
-  /** 진행률 업데이트 */
-  _updateProgress() {
-    const totalHazards = getAllHazards().length;
-    const completed = Object.keys(this.completedAssessments).length;
-    const pct = totalHazards > 0 ? Math.round((completed / totalHazards) * 100) : 0;
-
-    document.getElementById('progress-text').textContent = `${completed}/${totalHazards}`;
-    document.getElementById('progress-bar-fill').style.width = `${pct}%`;
-  },
-
-  /** 완료 화면 표시 */
-  _showCompleteScreen() {
-    document.getElementById('vr-screen').style.display = 'none';
-    document.getElementById('complete-screen').style.display = 'flex';
-    document.getElementById('complete-name').textContent = this.studentName;
-    document.getElementById('complete-count').textContent = Object.keys(this.completedAssessments).length;
-    this._renderCompleteResults();
-  },
-
-  /** Scene별 완료 결과 렌더링 */
-  _renderCompleteResults() {
-    const container = document.getElementById('complete-results');
-    if (!container) return;
-
-    // Scene별 그룹핑
-    const byScene = {};
-    for (const [hazardId, data] of Object.entries(this.completedAssessments)) {
-      const scene = data.sceneName;
-      if (!byScene[scene]) byScene[scene] = [];
-      byScene[scene].push({ hazardId, ...data });
-    }
-
-    let html = '';
-    for (const [sceneName, hazards] of Object.entries(byScene)) {
-      const sceneInfo = SCENE_DATA[sceneName];
-      const sceneTitle = sceneInfo ? sceneInfo.title : sceneName;
-
-      html += `<div class="scene-result-group">
-        <h3>${sceneTitle}</h3>
-        <div class="scene-result-cards">`;
-
-      for (const h of hazards) {
-        const level = getRiskLevel(h.riskScore);
-        html += `<div class="scene-result-card">
-          <div class="scene-result-title">${h.hazardTitle}</div>
-          <div class="scene-result-values">
-            <span>가능성 ${h.likelihood}</span>
-            <span>×</span>
-            <span>중대성 ${h.severity}</span>
-            <span>=</span>
-            <span class="risk-badge" style="background:${level.color}">${h.riskScore} ${level.label}</span>
-          </div>
-        </div>`;
-      }
-
-      html += `</div></div>`;
-    }
-
-    container.innerHTML = html;
-  },
-
-  /** 초기화 (다시 시작) */
+  /** 나가기 (초기화) */
   reset() {
-    this.completedAssessments = {};
+    this.myAssessments = [];
     const prefix = OrgContext.orgCode ? `${OrgContext.orgCode}_` : '';
     localStorage.removeItem(`${prefix}studentName`);
     localStorage.removeItem(`${prefix}currentSessionId`);

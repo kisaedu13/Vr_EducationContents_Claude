@@ -44,10 +44,15 @@ VR_Educaiton_Web/
 
 ## Commands
 - `npm install` — 의존성 설치
-- `npm run dev` — 개발 서버 실행 (http://localhost:3000)
-- `npm run start` — 동일 (serve로 정적 파일 서빙)
+- `vercel dev --listen 3000 --yes` — 로컬 개발 서버 (Vercel 리라이트 포함)
+- `npm run start` — 정적 파일 서빙 (리라이트 미지원)
 
 빌드 스텝 없음. vanilla JS를 정적 파일로 직접 서빙한다.
+
+## Workflow Rules
+- **로컬 확인 우선**: 코드 변경 후 반드시 로컬(`vercel dev`)에서 먼저 확인
+- **push 금지**: 사용자가 명시적으로 "push 해줘" 또는 "배포해줘"라고 요청할 때만 `git push` 실행
+- **커밋은 자유**: 로컬 커밋은 자유롭게 하되, 원격 push는 사용자 승인 필요
 
 ## Architecture
 
@@ -85,6 +90,11 @@ VR_Educaiton_Web/
 - URL 리라이트: `/edu/:code/student` → `student.html`, `/edu/:code/instructor` → `instructor.html`, `/edu/:code` → `index.html`
 - 레거시 경로: `/student`, `/instructor` 유지 (기관 코드 없이 접근 시 안내 메시지 표시)
 - `vtour/**` 정적 에셋: 1년 캐시 (immutable)
+
+## 기본 테스트 기관
+- 로컬 테스트 시 **서울지역본부** (`sel001`)를 기본 사용
+- 교육생: `http://localhost:3000/edu/sel001/student`
+- 강사: `http://localhost:3000/edu/sel001/instructor`
 
 ## Code Style Rules
 - 커밋 메시지는 한글로 작성

@@ -49,9 +49,9 @@ const InstructorApp = {
       KrpanoInterface.loadScene(firstScene);
     });
 
-    // 핫스팟 클릭 → 결과 팝업
+    // 핫스팟 클릭 → 정보 팝업
     KrpanoInterface.onHotspotClick = (hazardId) => {
-      this._showHazardResults(hazardId);
+      RiskAssessment.showHazardInfoPopup(hazardId, this.currentScene);
     };
 
     // 씬 변경 → 오버레이 갱신
@@ -99,13 +99,16 @@ const InstructorApp = {
     }
   },
 
-  /** 핫스팟 클릭 시 해당 위험요인의 교육생별 평가 결과 팝업 */
-  _showHazardResults(hazardId) {
-    const sceneAssessments = this.assessments.filter(a => a.hazard_id === hazardId);
-    RiskAssessment.showHazardResults(hazardId, this.currentScene, sceneAssessments);
+  /** 현재 Scene의 교육생 평가 목록 팝업 */
+  _showSceneResults() {
+    if (!this.currentScene) return;
+    const sceneAssessments = this.assessments
+      .filter(a => a.scene_name === this.currentScene)
+      .sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+    RiskAssessment.showHazardResults(sceneAssessments, this.currentScene);
   },
 
-  /** 현재 Scene의 위험요인별 요약 오버레이 갱신 */
+  /** 교육생 평가 목록 오버레이 (시간 역순) */
   _updateOverlay(sceneName) {
     const overlay = document.getElementById('result-overlay-content');
     if (!sceneName || !overlay) return;
@@ -113,7 +116,9 @@ const InstructorApp = {
     const scene = SCENE_DATA[sceneName];
     if (!scene) return;
 
-    const sceneAssessments = this.assessments.filter(a => a.scene_name === sceneName);
+    const sceneAssessments = this.assessments
+      .filter(a => a.scene_name === sceneName)
+      .sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
     const studentCount = new Set(sceneAssessments.map(a => a.student_name)).size;
 
     let html = `<div class="overlay-summary">
@@ -121,30 +126,60 @@ const InstructorApp = {
       <span>총 평가: <strong>${sceneAssessments.length}건</strong></span>
     </div>`;
 
-    html += scene.hazards.map(hazard => {
-      const ha = sceneAssessments.filter(a => a.hazard_id === hazard.id);
-      const count = ha.length;
+    if (sceneAssessments.length === 0) {
+      html += '<div class="overlay-hazard-empty" style="padding:20px;text-align:center">아직 제출된 평가가 없습니다.</div>';
+    } else {
+      html += sceneAssessments.map(a => {
+        const score = (a.frequency || 0) * (a.intensity || 0);
+        const level = getRiskLevel(score);
+        const desc = a.hazard_description || '-';
 
-      if (count === 0) {
-        return `<div class="overlay-hazard-card" onclick="InstructorApp._showHazardResults('${hazard.id}')">
-          <div class="overlay-hazard-title">${hazard.title}</div>
-          <div class="overlay-hazard-meta">${hazard.category}</div>
-          <div class="overlay-hazard-empty">평가 없음</div>
+        // 허용 상태 영역
+        let borderClass = '';
+        let statusHtml = '';
+        if (a.is_acceptable === true) {
+          borderClass = 'overlay-card-acceptable';
+          statusHtml = '<div class="ov-status ov-status-ok">&#10003; 허용 가능</div>';
+        } else if (a.is_acceptable === false) {
+          borderClass = 'overlay-card-unacceptable';
+          statusHtml = '<div class="ov-status ov-status-no">&#10007; 허용 불가능</div>';
+        }
+
+        // 감소대책 + 개선 전후 비교
+        let revisedHtml = '';
+        if (a.is_acceptable === false && a.reduction_measures) {
+          const rScore = (a.revised_frequency || 0) * (a.revised_intensity || 0);
+          const rLevel = getRiskLevel(rScore);
+          const improvement = score - rScore;
+          revisedHtml = `<div class="ov-revised">
+            <div class="ov-row-label">감소대책</div>
+            <div class="ov-row-value">${a.reduction_measures}</div>
+            <div class="ov-revised-score">
+              <span>개선 후 빈도 ${a.revised_frequency || 0} × 강도 ${a.revised_intensity || 0} =</span>
+              <span class="risk-badge" style="background:${rLevel.color}">${rScore}</span>
+              ${improvement > 0 ? `<span class="ov-improved">-${improvement}</span>` : ''}
+            </div>
+          </div>`;
+        }
+
+        return `<div class="overlay-hazard-card ${borderClass}">
+          <div class="ov-name">${a.student_name}</div>
+          <div class="ov-section">
+            <div class="ov-row-label">유해위험요인</div>
+            <div class="ov-row-value">${desc}</div>
+          </div>
+          <div class="ov-section">
+            <div class="ov-row-label">위험성</div>
+            <div class="ov-risk-calc">
+              <span>빈도 ${a.frequency || 0} × 강도 ${a.intensity || 0} =</span>
+              <span class="risk-badge risk-badge-lg" style="background:${level.color}">${score}</span>
+            </div>
+          </div>
+          ${statusHtml}
+          ${revisedHtml}
         </div>`;
-      }
-
-      const avgScore = (ha.reduce((s, a) => s + (a.likelihood * a.severity), 0) / count).toFixed(1);
-      const level = getRiskLevel(Math.round(parseFloat(avgScore)));
-
-      return `<div class="overlay-hazard-card" onclick="InstructorApp._showHazardResults('${hazard.id}')">
-        <div class="overlay-hazard-title">${hazard.title}</div>
-        <div class="overlay-hazard-meta">${hazard.category}</div>
-        <div class="overlay-hazard-stats">
-          <span class="overlay-stat">${count}명 참여</span>
-          <span class="risk-badge" style="background:${level.color}">${avgScore}</span>
-        </div>
-      </div>`;
-    }).join('');
+      }).join('');
+    }
 
     overlay.innerHTML = html;
   },
@@ -169,9 +204,12 @@ const InstructorApp = {
 
   /** 새 제출 토스트 */
   _showNewSubmitToast(assessment) {
+    const acceptText = assessment.is_acceptable === true ? '허용 가능'
+      : assessment.is_acceptable === false ? '허용 불가능' : '';
+    const statusText = acceptText ? ` (${acceptText})` : '';
     const toast = document.createElement('div');
     toast.className = 'toast toast-info';
-    toast.textContent = `${assessment.student_name}님이 "${assessment.hazard_title}" 평가를 제출했습니다.`;
+    toast.textContent = `${assessment.student_name}님이 평가를 제출했습니다.${statusText}`;
     document.body.appendChild(toast);
     requestAnimationFrame(() => toast.classList.add('show'));
     setTimeout(() => {

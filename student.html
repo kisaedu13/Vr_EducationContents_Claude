@@ -52,6 +52,8 @@
       </div>
       <div class="vr-topbar-right">
         <span class="student-badge" id="student-name-display"></span>
+        <button class="btn btn-assess" onclick="StudentApp.openAssessmentForm()">위험성평가</button>
+        <button class="btn btn-assess-list" onclick="StudentApp.showMyAssessments()">내 평가 (<span id="my-assessment-count">0</span>)</button>
         <button class="btn btn-scene" onclick="StudentApp.reset()" style="font-size:12px">나가기</button>
       </div>
     </div>
@@ -62,18 +64,6 @@
     <!-- krpano 뷰어 -->
     <div id="krpano-viewer"></div>
 
-  </div>
-
-  <!-- 3. 완료 화면 -->
-  <div id="complete-screen" class="complete-screen" style="display:none">
-    <div class="complete-card">
-      <div class="complete-icon">&#10003;</div>
-      <h1>평가 완료!</h1>
-      <p><strong id="complete-name"></strong>님의 위험성평가가</p>
-      <p>모두 제출되었습니다. (총 <strong id="complete-count"></strong>건)</p>
-      <div id="complete-results" class="complete-results"></div>
-      <button class="btn btn-primary" onclick="StudentApp.reset()">처음으로</button>
-    </div>
   </div>
 
   <!-- Scripts -->

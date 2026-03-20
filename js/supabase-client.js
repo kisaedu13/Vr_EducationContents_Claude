@@ -95,23 +95,46 @@ const SupabaseClient = {
   async submitAssessment(data) {
     if (!this.client) return this._localCreate('assessments', data);
 
-    const { data: result, error } = await this.client
+    const row = {
+      session_id: data.sessionId,
+      student_name: data.studentName,
+      student_org: data.studentOrg || '',
+      scene_name: data.sceneName,
+      hazard_description: data.hazardDescription,
+      frequency: data.frequency,
+      intensity: data.intensity,
+      is_acceptable: data.isAcceptable ?? null,
+      reduction_measures: data.reductionMeasures ?? null,
+      revised_frequency: data.revisedFrequency ?? null,
+      revised_intensity: data.revisedIntensity ?? null,
+    };
+
+    let result, error;
+    ({ data: result, error } = await this.client
       .from('assessments')
-      .insert({
-        session_id: data.sessionId,
-        student_name: data.studentName,
-        student_org: data.studentOrg,
-        scene_name: data.sceneName,
-        hazard_id: data.hazardId,
-        hazard_title: data.hazardTitle,
-        likelihood: data.likelihood,
-        severity: data.severity,
-      })
-      .select()
-      .single();
+      .insert(row)
+      .select());
+
+    // 컬럼 미존재 시 단계별 폴백
+    if (error) {
+      console.warn('평가 저장 실패, 단계별 컬럼으로 재시도:', error.message);
+      const { revised_frequency, revised_intensity, ...step2Row } = row;
+      ({ data: result, error } = await this.client
+        .from('assessments')
+        .insert(step2Row)
+        .select());
+    }
+    if (error) {
+      console.warn('2차 재시도, 기본 컬럼만:', error.message);
+      const { is_acceptable, reduction_measures, revised_frequency, revised_intensity, ...baseRow } = row;
+      ({ data: result, error } = await this.client
+        .from('assessments')
+        .insert(baseRow)
+        .select());
+    }
 
     if (error) throw error;
-    return result;
+    return result?.[0];
   },
 
   /** 세션별 평가 결과 조회 */
@@ -133,34 +156,30 @@ const SupabaseClient = {
     const assessments = await this.getAssessments(sessionId);
 
     const students = [...new Set(assessments.map(a => a.student_name))];
-    const byHazard = {};
+    const byScene = {};
 
     assessments.forEach(a => {
-      if (!byHazard[a.hazard_id]) {
-        byHazard[a.hazard_id] = {
-          hazardId: a.hazard_id,
-          hazardTitle: a.hazard_title,
+      if (!byScene[a.scene_name]) {
+        byScene[a.scene_name] = {
           sceneName: a.scene_name,
           assessments: [],
         };
       }
-      byHazard[a.hazard_id].assessments.push(a);
+      byScene[a.scene_name].assessments.push(a);
     });
 
-    // 위험요인별 평균 계산
-    Object.values(byHazard).forEach(h => {
-      const scores = h.assessments.map(a => a.likelihood * a.severity);
-      h.avgScore = scores.reduce((sum, s) => sum + s, 0) / scores.length;
-      h.avgLikelihood = h.assessments.reduce((sum, a) => sum + a.likelihood, 0) / h.assessments.length;
-      h.avgSeverity = h.assessments.reduce((sum, a) => sum + a.severity, 0) / h.assessments.length;
-      h.count = h.assessments.length;
+    // Scene별 평균 계산
+    Object.values(byScene).forEach(s => {
+      const scores = s.assessments.map(a => (a.frequency || 0) * (a.intensity || 0));
+      s.avgScore = scores.reduce((sum, v) => sum + v, 0) / scores.length;
+      s.count = s.assessments.length;
     });
 
     return {
       totalAssessments: assessments.length,
       studentCount: students.length,
       students,
-      byHazard: Object.values(byHazard),
+      byScene: Object.values(byScene),
       raw: assessments,
     };
   },
@@ -207,7 +226,13 @@ const SupabaseClient = {
       is_active: true,
     };
     if (table === 'assessments') {
-      item.risk_score = (data.likelihood || 0) * (data.severity || 0);
+      item.risk_score = (data.frequency || 0) * (data.intensity || 0);
+      item.is_acceptable = data.is_acceptable ?? data.isAcceptable ?? null;
+      item.reduction_measures = data.reduction_measures ?? data.reductionMeasures ?? null;
+      item.revised_frequency = data.revised_frequency ?? data.revisedFrequency ?? null;
+      item.revised_intensity = data.revised_intensity ?? data.revisedIntensity ?? null;
+      item.revised_risk_score = (item.revised_frequency && item.revised_intensity)
+        ? item.revised_frequency * item.revised_intensity : null;
     }
     items.push(item);
     localStorage.setItem(key, JSON.stringify(items));

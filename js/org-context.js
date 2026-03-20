@@ -94,7 +94,7 @@ const OrgContext = {
    */
   _showErrorScreen(title, message, detail) {
     // 기존 콘텐츠 모두 숨기기
-    document.querySelectorAll('#entry-screen, #vr-screen, #complete-screen, #session-manager, #dashboard, #instructor-vr-screen, #no-session-screen').forEach(el => {
+    document.querySelectorAll('#entry-screen, #vr-screen, #session-manager, #dashboard, #instructor-vr-screen, #no-session-screen').forEach(el => {
       if (el) el.style.display = 'none';
     });
 
