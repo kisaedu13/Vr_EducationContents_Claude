@@ -21,6 +21,7 @@ const KrpanoInterface = {
       passQueryParameters: 'startscene,startlookat',
       onready: (krpanoObj) => {
         this.krpano = krpanoObj;
+        this._startVRWatcher();
         if (callback) callback();
       },
     });
@@ -91,18 +92,22 @@ const KrpanoInterface = {
     if (this.onHotspotClick) this.onHotspotClick(hazardId);
   },
 
-  /** VR 모드 진입 핸들러 (krpano에서 호출) */
-  _onEnterVR() {
-    this.vrMode = true;
-    document.body.classList.add('vr-active');
-    if (this.onVRModeChange) this.onVRModeChange(true);
-  },
-
-  /** VR 모드 해제 핸들러 (krpano에서 호출) */
-  _onExitVR() {
-    this.vrMode = false;
-    document.body.classList.remove('vr-active');
-    if (this.onVRModeChange) this.onVRModeChange(false);
+  /** VR 모드 상태 감시 (폴링 방식 — XML 수정 불필요) */
+  _vrWatcherId: null,
+  _startVRWatcher() {
+    this._vrWatcherId = setInterval(() => {
+      if (!this.krpano) return;
+      const isVR = this.krpano.get('webvr.isenabled');
+      if (isVR && !this.vrMode) {
+        this.vrMode = true;
+        document.body.classList.add('vr-active');
+        if (this.onVRModeChange) this.onVRModeChange(true);
+      } else if (!isVR && this.vrMode) {
+        this.vrMode = false;
+        document.body.classList.remove('vr-active');
+        if (this.onVRModeChange) this.onVRModeChange(false);
+      }
+    }, 500);
   },
 
   /** SVG 정보 마커 생성 (Base64) */

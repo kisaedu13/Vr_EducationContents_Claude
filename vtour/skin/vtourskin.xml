@@ -103,8 +103,8 @@
 	<plugin name="webvr" keep="true" devices="webgl"
 	        url="calc:skin_settings.webvr == true ? '%VIEWER%/plugins/webvr.js' : null"
 	        onavailable="skin_webvr_onavailable();"
-	        onentervr="skin_showloading(false); webvr_onentervr(); skin_webvr_setup(); skin_reloadscene_webvr(); js(KrpanoInterface._onEnterVR());"
-	        onexitvr="webvr_onexitvr(); skin_webvr_setup(); skin_reloadscene_webvr(); js(KrpanoInterface._onExitVR());"
+	        onentervr="skin_showloading(false); webvr_onentervr(); skin_webvr_setup(); skin_reloadscene_webvr();"
+	        onexitvr="webvr_onexitvr(); skin_webvr_setup(); skin_reloadscene_webvr();"
 	        />
 	
 	<!-- webvr button style (adjust to match skin style) -->
