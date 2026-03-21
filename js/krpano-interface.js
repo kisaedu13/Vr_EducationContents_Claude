@@ -110,34 +110,49 @@ const KrpanoInterface = {
     }, 500);
   },
 
-  /** SVG 정보 마커 생성 (Base64) */
+  /** SVG 위험요인 마커 생성 (Base64) — 주황-빨강 경고 스타일 */
   _createMarkerSVG() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="140" viewBox="0 0 120 140">
       <defs>
-        <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
-          <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000" flood-opacity="0.5"/>
-        </filter>
-        <radialGradient id="bg" cx="50%" cy="40%" r="50%">
-          <stop offset="0%" stop-color="#42A5F5"/>
-          <stop offset="100%" stop-color="#1565C0"/>
+        <radialGradient id="main-bg" cx="45%" cy="35%" r="55%">
+          <stop offset="0%" stop-color="#FF8A3D"/>
+          <stop offset="50%" stop-color="#FF5722"/>
+          <stop offset="100%" stop-color="#D32F2F"/>
         </radialGradient>
+        <radialGradient id="gloss" cx="50%" cy="25%" r="45%">
+          <stop offset="0%" stop-color="white" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="white" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+          <stop offset="60%" stop-color="#FF5722" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#FF5722" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="shadow" x="-30%" y="-20%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#B71C1C" flood-opacity="0.5"/>
+        </filter>
+        <filter id="pulse-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
       </defs>
-      <circle cx="60" cy="58" r="44" fill="none" stroke="#42A5F5" stroke-width="2" opacity="0">
-        <animate attributeName="r" values="38;52;38" dur="2s" repeatCount="indefinite"/>
-        <animate attributeName="opacity" values="0.7;0;0.7" dur="2s" repeatCount="indefinite"/>
+      <circle cx="60" cy="60" r="52" fill="url(#glow)"/>
+      <circle cx="60" cy="60" r="38" fill="none" stroke="#FF5722" stroke-width="2.5" opacity="0" filter="url(#pulse-glow)">
+        <animate attributeName="r" values="36;54;36" dur="2.2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.8;0;0.8" dur="2.2s" repeatCount="indefinite"/>
+        <animate attributeName="stroke-width" values="2.5;0.5;2.5" dur="2.2s" repeatCount="indefinite"/>
       </circle>
-      <circle cx="60" cy="58" r="44" fill="none" stroke="#42A5F5" stroke-width="1.5" opacity="0">
-        <animate attributeName="r" values="38;48;38" dur="2s" repeatCount="indefinite" begin="0.5s"/>
-        <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+      <circle cx="60" cy="60" r="36" fill="none" stroke="#FFAB91" stroke-width="1.5" opacity="0">
+        <animate attributeName="r" values="36;50;36" dur="2.2s" repeatCount="indefinite" begin="0.7s"/>
+        <animate attributeName="opacity" values="0.5;0;0.5" dur="2.2s" repeatCount="indefinite" begin="0.7s"/>
       </circle>
-      <g filter="url(#ds)">
-        <animateTransform attributeName="transform" type="translate" values="0,0; 0,-6; 0,0" dur="1.8s" repeatCount="indefinite" calcMode="spline" keySplines="0.33,0,0.67,1; 0.33,0,0.67,1"/>
-        <circle cx="60" cy="58" r="34" fill="url(#bg)"/>
-        <circle cx="60" cy="58" r="34" fill="none" stroke="white" stroke-width="2.5" opacity="0.6"/>
-        <circle cx="60" cy="58" r="26" fill="none" stroke="white" stroke-width="1.5" opacity="0.3" stroke-dasharray="4 3"/>
-        <line x1="60" y1="44" x2="60" y2="58" stroke="white" stroke-width="4" stroke-linecap="round"/>
-        <circle cx="60" cy="66" r="2.5" fill="white"/>
-        <polygon points="60,82 54,92 66,92" fill="white" opacity="0.9"/>
+      <g filter="url(#shadow)">
+        <animateTransform attributeName="transform" type="translate" values="0,0; 0,-5; 0,0" dur="2s" repeatCount="indefinite" calcMode="spline" keySplines="0.33,0,0.67,1; 0.33,0,0.67,1"/>
+        <circle cx="60" cy="60" r="34" fill="url(#main-bg)"/>
+        <circle cx="60" cy="60" r="33" fill="none" stroke="white" stroke-width="2" opacity="0.35"/>
+        <ellipse cx="58" cy="48" rx="22" ry="16" fill="url(#gloss)"/>
+        <rect x="55.5" y="42" width="9" height="22" rx="4.5" fill="white"/>
+        <circle cx="60" cy="73" r="5" fill="white"/>
+        <polygon points="60,88 53,96 67,96" fill="url(#main-bg)" opacity="0.9" stroke="white" stroke-width="1" stroke-opacity="0.3"/>
       </g>
     </svg>`;
     return btoa(unescape(encodeURIComponent(svg)));

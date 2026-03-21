@@ -10,9 +10,9 @@ const APP_CONFIG = {
 
 // 위험성평가 5x4 매트릭스 등급 정의
 const RISK_LEVELS = {
-  LOW:      { min: 1,  max: 4,  label: '저위험',   color: '#4CAF50', bgColor: '#E8F5E9' },
-  CAUTION:  { min: 5,  max: 9,  label: '주의',     color: '#FF9800', bgColor: '#FFF3E0' },
-  HIGH:     { min: 10, max: 15, label: '고위험',   color: '#FF5722', bgColor: '#FBE9E7' },
+  LOW: { min: 1, max: 4, label: '저위험', color: '#4CAF50', bgColor: '#E8F5E9' },
+  CAUTION: { min: 5, max: 9, label: '주의', color: '#FF9800', bgColor: '#FFF3E0' },
+  HIGH: { min: 10, max: 15, label: '고위험', color: '#FF5722', bgColor: '#FBE9E7' },
   CRITICAL: { min: 16, max: 20, label: '매우위험', color: '#D32F2F', bgColor: '#FFEBEE' },
 };
 
@@ -44,8 +44,8 @@ const SCENE_DATA = {
         title: '롤테이너',
         description: '작업장 내 롤테이너가 이동 중입니다. 주변 근로자의 안전에 주의가 필요합니다.',
         category: '운반장비',
-        ath: -30,
-        atv: 5,
+        ath: -39,
+        atv: 0,
         risks: [
           {
             title: '발끼임',
